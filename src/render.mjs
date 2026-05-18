@@ -128,6 +128,16 @@ function mathText(text) {
 
 let quiverMarkerIdCounter = 0;
 
+function clusterIndexText(label) {
+  const match = /^A(\d+)$/.exec(String(label ?? ""));
+  return match ? match[1] : String(label ?? "");
+}
+
+function clusterVariableText(label) {
+  const match = /^A(\d+)$/.exec(String(label ?? ""));
+  return match ? `A_${match[1]}` : String(label ?? "");
+}
+
 function appendSvgMath(node, text) {
   const tokens = String(text ?? "").match(/[\p{L}\p{M}]+[0-9]+|_\{[^}]+\}|\^\{[^}]+\}|_[\p{L}\p{N}Δℭ]+|\^[\p{L}\p{N}]+|./gu) ?? [];
   tokens.forEach((token) => {
@@ -212,7 +222,10 @@ function renderChainRibbon(trace, { showTitle = true } = {}) {
 
   const ribbon = el("div", "chain-ribbon");
   trace.chain.rows.forEach((row) => {
-    const chip = el("div", row.frozen ? "chain-chip frozen" : "chain-chip");
+    const chip = el("div", row.frozen ? "chain-chip frozen chain-selectable" : "chain-chip chain-selectable");
+    chip.dataset.chainT = String(row.t);
+    chip.setAttribute("role", "button");
+    chip.setAttribute("tabindex", "0");
     chip.appendChild(formulaSpan(`𝔠_${row.t}`, "chain-chip-title formula"));
     chip.appendChild(el("span", "chain-chip-interval", intervalTextForDisplay(row.box)));
     chip.title = `envelope ${intervalTextForDisplay(row.envelope)}, effective end z_${row.t}=${row.effectiveEnd}${row.frozen ? ", frozen" : ""}`;
@@ -317,7 +330,10 @@ function renderDeterminantialModules(trace, cycleColors) {
   const list = el("div", "cluster-answer-list determinantial-list");
   trace.determinantialModules.rows.forEach((row) => {
     const clusterLabel = `A${row.t}`;
-    const item = el("div", "cluster-answer-item determinantial-row");
+    const item = el("div", "cluster-answer-item determinantial-row chain-selectable");
+    item.dataset.chainT = String(row.t);
+    item.setAttribute("role", "button");
+    item.setAttribute("tabindex", "0");
     if (row.calculation?.interval && trace.chain.rows[row.t - 1]?.frozen) item.classList.add("frozen");
     item.style.setProperty("--cycle-color", cycleColors.get(clusterLabel) ?? "var(--accent)");
     const label = el("span", "cluster-answer-label determinantial-answer-label");
@@ -381,7 +397,10 @@ function renderTimeline(trace, cycleColors) {
   wrap.appendChild(header);
 
   trace.chain.rows.forEach((row) => {
-    const line = el("div", "timeline-row");
+    const line = el("div", "timeline-row chain-selectable");
+    line.dataset.chainT = String(row.t);
+    line.setAttribute("role", "button");
+    line.setAttribute("tabindex", "0");
     line.appendChild(el("div", "timeline-label", `t=${row.t}`));
     for (let pos = 1; pos <= trace.u.length; pos += 1) {
       const classes = ["timeline-cell"];
@@ -414,10 +433,48 @@ function renderTimeline(trace, cycleColors) {
   chainBlock.appendChild(renderSignedWordDetails(trace));
 
   const body = el("div", "chain-visual-block");
+  let selectedChainT = null;
+  function clusterLabelForT(t) {
+    return `A${t}`;
+  }
+  function syncChainSelection() {
+    body.classList.toggle("has-chain-selection", selectedChainT !== null);
+    body.querySelectorAll("[data-chain-t]").forEach((node) => {
+      node.classList.toggle("active", selectedChainT !== null && Number(node.dataset.chainT) === selectedChainT);
+    });
+    body.querySelectorAll("[data-cluster]").forEach((node) => {
+      node.classList.toggle("active", selectedChainT !== null && node.dataset.cluster === clusterLabelForT(selectedChainT));
+    });
+    body.querySelectorAll(".quiver-arrow").forEach((node) => {
+      const selectedLabel = selectedChainT === null ? null : clusterLabelForT(selectedChainT);
+      const incident = selectedLabel !== null
+        && (node.dataset.source === selectedLabel || node.dataset.target === selectedLabel);
+      node.classList.toggle("active", incident);
+      node.classList.toggle("dimmed", selectedLabel !== null && !incident);
+    });
+  }
+  function selectChainT(t) {
+    selectedChainT = selectedChainT === t ? null : t;
+    syncChainSelection();
+  }
+  body.addEventListener("click", (event) => {
+    const target = event.target.closest("[data-chain-t]");
+    if (!target || !body.contains(target)) return;
+    selectChainT(Number(target.dataset.chainT));
+  });
+  body.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const target = event.target.closest("[data-chain-t]");
+    if (!target || !body.contains(target)) return;
+    event.preventDefault();
+    selectChainT(Number(target.dataset.chainT));
+  });
+
   body.appendChild(renderAdmissibleChainPanel(trace, pyramidBlock, chainBlock));
-  const chainQuiver = renderChainQuiver(trace, cycleColors);
+  const chainQuiver = renderChainQuiver(trace, cycleColors, (label) => selectChainT(Number(clusterIndexText(label))));
   if (chainQuiver) body.appendChild(chainQuiver);
   body.appendChild(renderDeterminantialModules(trace, cycleColors));
+  syncChainSelection();
   return renderCard(
     "ℭ",
     body,
@@ -444,7 +501,7 @@ function oppositeQuiverData(quiver) {
   };
 }
 
-function renderChainQuiver(trace, cycleColors) {
+function renderChainQuiver(trace, cycleColors, onSelect = null) {
   const quiver = oppositeQuiverData(trace.bottomWeave.quiverData);
   if (!quiver || (quiver.labels ?? []).length === 0) return null;
 
@@ -457,7 +514,7 @@ function renderChainQuiver(trace, cycleColors) {
   section.appendChild(header);
 
   const scroller = el("div", "quiver-scroll chain-quiver-scroll");
-  scroller.appendChild(renderQuiverSvg(quiver, cycleColors));
+  scroller.appendChild(renderQuiverSvg(quiver, cycleColors, onSelect));
   section.appendChild(scroller);
   section.appendChild(renderExchangeMatrixToggle(quiver, "B(Q(ℭ))"));
   return section;
@@ -644,6 +701,26 @@ function appendText(svg, x, y, text, className = "weave-label") {
   return node;
 }
 
+function appendWeaveVertexBadge(svg, x, y, label, className = "weave-cluster-badge") {
+  const text = clusterIndexText(label);
+  const width = Math.max(16, 10 + text.length * 6);
+  const group = svgEl("g");
+  group.setAttribute("class", className);
+  const box = svgEl("rect");
+  box.setAttribute("x", String(x - width / 2));
+  box.setAttribute("y", String(y - 8));
+  box.setAttribute("width", String(width));
+  box.setAttribute("height", "16");
+  box.setAttribute("rx", "8");
+  const node = svgEl("text");
+  node.setAttribute("x", String(x));
+  node.setAttribute("y", String(y + 4));
+  node.textContent = text;
+  group.append(box, node);
+  svg.appendChild(group);
+  return group;
+}
+
 function triInfoForStrip(weave, stripIdx) {
   return weave.stepInfos.find((info) => info.triMoveIndex === stripIdx) ?? null;
 }
@@ -756,7 +833,7 @@ function drawStripGeometry(svg, {
     dot.setAttribute("r", "5");
     dot.setAttribute("class", "weave-tri-dot");
     svg.appendChild(dot);
-    if (triInfo) appendText(svg, vertexX + 9, vertexY - 8, triInfo.clusterVariable, "weave-cluster-label");
+    if (triInfo) appendWeaveVertexBadge(svg, vertexX + 14, vertexY - 12, triInfo.clusterVariable);
     let virtualIndex = 1;
     for (let idx = p + 2; idx < before.length; idx += 1) {
       drawDirect(idx, idx - 1);
@@ -1133,7 +1210,7 @@ function renderClusterVariableAnswerPanel(trace, cycleColors, onSelect = null, o
     if (onSelect) {
       item.setAttribute("role", "button");
       item.setAttribute("tabindex", "0");
-      item.setAttribute("aria-label", `highlight ${value.label}`);
+      item.setAttribute("aria-label", `highlight ${clusterVariableText(value.label)}`);
       item.addEventListener("click", (event) => {
         if (event.target.closest("details")) return;
         onSelect(value.label);
@@ -1145,7 +1222,7 @@ function renderClusterVariableAnswerPanel(trace, cycleColors, onSelect = null, o
         }
       });
     }
-    item.appendChild(el("span", "cluster-answer-label", value.label));
+    item.appendChild(formulaSpan(clusterVariableText(value.label), "cluster-answer-label formula"));
     const content = el("div", "cluster-answer-content");
     if (formulasAvailable) {
       content.appendChild(formulaSpan(value.expression, "cluster-answer-expression formula"));
@@ -1384,14 +1461,14 @@ function renderInteractiveWeaveViewer(trace, {
     info.replaceChildren();
     const title = el("div", "edge-label-info-title");
     title.appendChild(el("span", "summary-label", "trivalent vertex"));
-    title.appendChild(el("strong", "", data.label));
+    title.appendChild(el("strong", "", clusterIndexText(data.label)));
     title.appendChild(el("span", "cluster-answer-meta", data.frozen ? "frozen" : "mutable"));
     appendInfoClearButton(title);
     info.appendChild(title);
     const values = el("div", "variable-value-list");
     const expression = data.final || topCoordinateExpression(trace, data.bottom);
     values.appendChild(renderValueBlock(
-      `${data.label}(𝒲_{Δ̲}(ℭ))`,
+      `${clusterVariableText(data.label)}(𝒲_{Δ̲}(ℭ))`,
       expression ? formulaSpan(expression) : el("span", "cluster-answer-meta", "coordinate formula unavailable"),
     ));
     info.appendChild(values);
@@ -1402,7 +1479,7 @@ function renderInteractiveWeaveViewer(trace, {
     const title = el("div", "edge-label-info-title");
     title.appendChild(el("span", "summary-label", "dashed edge"));
     title.appendChild(el("strong", "", `Y_${data.segmentIndex}`));
-    title.appendChild(el("span", "cluster-answer-meta", data.label));
+    title.appendChild(el("span", "cluster-answer-meta", `trivalent vertex ${clusterIndexText(data.label)}`));
     appendInfoClearButton(title);
     info.appendChild(title);
     const values = el("div", "variable-value-list");
@@ -1424,7 +1501,7 @@ function renderInteractiveWeaveViewer(trace, {
     info.replaceChildren();
     const title = el("div", "edge-label-info-title");
     title.appendChild(el("span", "summary-label", "quiver arrow"));
-    title.appendChild(el("strong", "", `${data.source} → ${data.target}`));
+    title.appendChild(el("strong", "", `${clusterIndexText(data.source)} → ${clusterIndexText(data.target)}`));
     title.appendChild(el("span", "cluster-answer-meta", `weight ${data.weight}`));
     appendInfoClearButton(title);
     info.appendChild(title);
@@ -1453,7 +1530,7 @@ function renderInteractiveWeaveViewer(trace, {
       incidentArrows.forEach((arrow) => {
         const item = el("div", "quiver-evidence-item");
         const direction = arrow.source === data.label ? "outgoing" : "incoming";
-        item.appendChild(el("span", "quiver-evidence-source", `${direction}: ${arrow.source} → ${arrow.target}`));
+        item.appendChild(el("span", "quiver-evidence-source", `${direction}: ${clusterIndexText(arrow.source)} → ${clusterIndexText(arrow.target)}`));
         item.appendChild(el("span", "quiver-evidence-value", String(arrow.weight)));
         list.appendChild(item);
       });
@@ -1485,7 +1562,9 @@ function renderInteractiveWeaveViewer(trace, {
       node.classList.toggle("related", selectedClusterLabel !== null && node.dataset.relatedCluster === selectedClusterLabel);
     });
     svg.querySelectorAll(".selection-cluster-label").forEach((node) => {
-      node.classList.toggle("visible", selectedClusterLabel !== null && node.dataset.relatedCluster === selectedClusterLabel);
+      node.classList.toggle("visible", selectedKey?.startsWith("dashed:")
+        && selectedClusterLabel !== null
+        && node.dataset.relatedCluster === selectedClusterLabel);
     });
     syncCycleDisplay();
     syncEvidenceMarkers();
@@ -1780,7 +1859,7 @@ function renderInteractiveWeaveViewer(trace, {
         node.setAttribute("class", "dashed-edge-node");
         node.setAttribute("tabindex", "0");
         node.setAttribute("role", "button");
-        node.setAttribute("aria-label", `show dashed matrix Y_${segIdx} for ${clusterValue.label}`);
+        node.setAttribute("aria-label", `show dashed matrix Y_${segIdx} for trivalent vertex ${clusterIndexText(clusterValue.label)}`);
         node.dataset.edgeKey = data.key;
         node.dataset.relatedCluster = clusterValue.label;
         node.addEventListener("click", () => selectItem(data));
@@ -1813,19 +1892,20 @@ function renderInteractiveWeaveViewer(trace, {
     node.setAttribute("class", "cluster-vertex-node");
     node.setAttribute("tabindex", "0");
     node.setAttribute("role", "button");
-    node.setAttribute("aria-label", `show cluster variable ${clusterValue.label}`);
+    node.setAttribute("aria-label", `show cluster variable ${clusterVariableText(clusterValue.label)}`);
     node.dataset.edgeKey = data.key;
     node.dataset.cluster = clusterValue.label;
     node.dataset.relatedCluster = clusterValue.label;
-    node.addEventListener("click", () => selectItem(data));
+    node.addEventListener("click", () => selectItem(data, { focusCycle: true }));
     node.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        selectItem(data);
+        selectItem(data, { focusCycle: true });
       }
     });
     svg.appendChild(node);
-    appendText(svg, vertexX + 8, vertexY - 8, clusterValue.label, "cluster-vertex-node-label");
+    const labelNode = appendWeaveVertexBadge(svg, vertexX + 15, vertexY - 13, clusterValue.label, "cluster-vertex-node-label");
+    labelNode.dataset.relatedCluster = clusterValue.label;
   });
 
   function lerpPoint(start, end, amount) {
@@ -2110,7 +2190,7 @@ function renderExchangeMatrixTable(quiver) {
   const headRow = el("tr");
   headRow.appendChild(el("th", "exchange-matrix-corner", ""));
   labels.forEach((label) => {
-    headRow.appendChild(el("th", "", label));
+    headRow.appendChild(el("th", "", clusterIndexText(label)));
   });
   thead.appendChild(headRow);
   table.appendChild(thead);
@@ -2118,7 +2198,7 @@ function renderExchangeMatrixTable(quiver) {
   const tbody = el("tbody");
   labels.forEach((rowLabel) => {
     const row = el("tr");
-    row.appendChild(el("th", "", rowLabel));
+    row.appendChild(el("th", "", clusterIndexText(rowLabel)));
     labels.forEach((colLabel) => {
       const raw = quiver.epsilon?.[rowLabel]?.[colLabel] ?? 0;
       const text = exchangeMatrixValueText(raw);
@@ -2277,7 +2357,7 @@ function renderQuiverSvg(quiver, cycleColors, onSelect = null, onArrowSelect = n
       hitbox.dataset.arrowKey = `${arrow.source}->${arrow.target}`;
       hitbox.setAttribute("role", "button");
       hitbox.setAttribute("tabindex", "0");
-      hitbox.setAttribute("aria-label", `show quiver arrow ${arrow.source} to ${arrow.target}`);
+      hitbox.setAttribute("aria-label", `show quiver arrow ${clusterIndexText(arrow.source)} to ${clusterIndexText(arrow.target)}`);
       const setArrowHover = (active) => {
         path.classList.toggle("hover", active);
       };
@@ -2319,7 +2399,7 @@ function renderQuiverSvg(quiver, cycleColors, onSelect = null, onArrowSelect = n
     if (onSelect) {
       group.setAttribute("role", "button");
       group.setAttribute("tabindex", "0");
-      group.setAttribute("aria-label", `select ${label}`);
+      group.setAttribute("aria-label", `select trivalent vertex ${clusterIndexText(label)}`);
       group.addEventListener("click", () => onSelect(label));
       group.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
@@ -2329,6 +2409,14 @@ function renderQuiverSvg(quiver, cycleColors, onSelect = null, onArrowSelect = n
       });
     }
     if (frozen.has(label)) {
+      const halo = svgEl("rect");
+      halo.setAttribute("x", String(position.x - 20));
+      halo.setAttribute("y", String(position.y - 20));
+      halo.setAttribute("width", "40");
+      halo.setAttribute("height", "40");
+      halo.setAttribute("rx", "7");
+      halo.setAttribute("class", "quiver-node-halo frozen");
+      group.appendChild(halo);
       const node = svgEl("rect");
       node.setAttribute("x", String(position.x - 15));
       node.setAttribute("y", String(position.y - 15));
@@ -2339,6 +2427,12 @@ function renderQuiverSvg(quiver, cycleColors, onSelect = null, onArrowSelect = n
       node.setAttribute("class", "quiver-node frozen");
       group.appendChild(node);
     } else {
+      const halo = svgEl("circle");
+      halo.setAttribute("cx", String(position.x));
+      halo.setAttribute("cy", String(position.y));
+      halo.setAttribute("r", "21");
+      halo.setAttribute("class", "quiver-node-halo mutable");
+      group.appendChild(halo);
       const node = svgEl("circle");
       node.setAttribute("cx", String(position.x));
       node.setAttribute("cy", String(position.y));
@@ -2348,11 +2442,7 @@ function renderQuiverSvg(quiver, cycleColors, onSelect = null, onArrowSelect = n
       group.appendChild(node);
     }
 
-    const labelX = position.x + 29 * Math.cos(position.theta);
-    const labelY = position.y + 29 * Math.sin(position.theta) + 4;
-    const text = appendText(group, labelX, labelY, label, "quiver-node-label");
-    if (Math.cos(position.theta) > 0.35) text.setAttribute("text-anchor", "start");
-    if (Math.cos(position.theta) < -0.35) text.setAttribute("text-anchor", "end");
+    appendText(group, position.x, position.y + 4, clusterIndexText(label), "quiver-node-label");
     svg.appendChild(group);
   });
 
@@ -2593,7 +2683,7 @@ function renderFullWeave(trace) {
     initialLabel: selectedCluster,
     cycleColors,
     onSelectionChange: (data) => {
-      selectedCluster = null;
+      selectedCluster = data?.kind === "cluster" ? data.label : null;
       selectedClusterFocus = false;
       selectedArrow = null;
       syncClusterSelection({ updateViewer: false });
@@ -2660,7 +2750,7 @@ function renderFullWeave(trace) {
   function selectClusterFromList(label) {
     const next = selectedCluster === label ? null : label;
     selectedCluster = next;
-    selectedClusterFocus = false;
+    selectedClusterFocus = next !== null;
     selectedArrow = null;
     syncClusterSelection({ scroll: next !== null });
     syncWholeUrl();

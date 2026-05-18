@@ -747,6 +747,35 @@ h2 {
   gap: 16px;
 }
 
+.chain-selectable {
+  cursor: pointer;
+}
+
+.chain-selectable:focus {
+  outline: 2px solid rgba(15, 107, 122, 0.35);
+  outline-offset: 2px;
+}
+
+.chain-visual-block.has-chain-selection .chain-selectable:not(.active) {
+  opacity: 0.62;
+}
+
+.chain-visual-block.has-chain-selection .chain-selectable.active {
+  opacity: 1;
+}
+
+.chain-visual-block.has-chain-selection .quiver-node-group:not(.active) {
+  opacity: 0.48;
+}
+
+.whole-result-view.has-cluster-selection .quiver-node-group:not(.active) {
+  opacity: 0.48;
+}
+
+.whole-result-view.has-cluster-selection .cluster-answer-item:not(.active) {
+  opacity: 0.62;
+}
+
 .admissible-chain-panel {
   gap: 12px;
 }
@@ -881,6 +910,11 @@ h2 {
   background: #fff;
 }
 
+.determinantial-row.active {
+  border-color: var(--accent-strong);
+  box-shadow: inset 4px 0 0 var(--cycle-color), 0 0 0 1px rgba(15, 107, 122, 0.18);
+}
+
 .determinantial-row.frozen .determinantial-answer-label {
   border-color: var(--ink);
   box-shadow: inset 0 -3px 0 var(--cycle-color), 0 0 0 1px rgba(23, 32, 38, 0.12);
@@ -908,6 +942,11 @@ h2 {
   border-radius: 6px;
   background: #fff;
   padding: 8px 9px;
+}
+
+.chain-chip.active {
+  border-color: var(--accent-strong);
+  box-shadow: inset 0 -3px 0 var(--accent), 0 0 0 1px rgba(15, 107, 122, 0.16);
 }
 
 .chain-chip.frozen {
@@ -953,6 +992,19 @@ h2 {
   align-items: center;
   min-width: max-content;
   margin-bottom: 5px;
+}
+
+.timeline-row.chain-selectable {
+  border-radius: 6px;
+}
+
+.timeline-row.active .timeline-label {
+  color: var(--accent-strong);
+}
+
+.timeline-row.active .timeline-cell:not(.header-cell) {
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 1px rgba(15, 107, 122, 0.14);
 }
 
 .timeline-label {
@@ -1756,21 +1808,41 @@ h2 {
 
 .cluster-vertex-node:hover,
 .cluster-vertex-node.active {
-  fill: var(--accent);
-  stroke: #111827;
+  fill: #111827;
+  stroke: var(--accent-strong);
+  stroke-width: 4;
 }
 
 .cluster-vertex-node:focus {
-  fill: var(--accent);
-  stroke: #111827;
+  fill: #111827;
+  stroke: var(--accent-strong);
+  stroke-width: 4;
   outline: none;
 }
 
+.weave-cluster-badge,
 .cluster-vertex-node-label {
-  text-anchor: start;
+  pointer-events: none;
+}
+
+.weave-cluster-badge rect,
+.cluster-vertex-node-label rect {
+  fill: #fff;
+  stroke: #111827;
+  stroke-width: 1.2;
+}
+
+.weave-cluster-badge text,
+.cluster-vertex-node-label text {
+  text-anchor: middle;
   fill: #111827;
   font-size: 10px;
   font-weight: 900;
+}
+
+.cluster-vertex-node-label.related rect {
+  stroke: var(--accent-strong);
+  stroke-width: 1.8;
 }
 
 .dashed-edge-node {
@@ -2110,39 +2182,53 @@ h2 {
 .quiver-node {
   stroke: #111;
   stroke-width: 2;
-  transition: stroke-width 120ms ease, filter 120ms ease;
+  transition: filter 120ms ease;
+}
+
+.quiver-node-halo {
+  fill: none;
+  stroke: #111827;
+  stroke-width: 3.4;
+  opacity: 0;
+  transition: opacity 120ms ease, stroke-width 120ms ease;
+  pointer-events: none;
 }
 
 .quiver-node-group.selectable {
   cursor: pointer;
 }
 
-.quiver-node-group.selectable:hover .quiver-node,
-.quiver-node-group.selectable:focus .quiver-node,
-.quiver-node-group.active .quiver-node {
-  stroke-width: 3.4;
-  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.24));
+.quiver-node-group.selectable:hover .quiver-node-halo,
+.quiver-node-group.selectable:focus .quiver-node-halo,
+.quiver-node-group.active .quiver-node-halo {
+  opacity: 1;
   outline: none;
 }
 
-.quiver-node-group.paired .quiver-node {
-  stroke-width: 3.2;
-  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.18));
+.quiver-node-group.paired .quiver-node-halo {
+  opacity: 0.55;
+  stroke-width: 2.6;
 }
 
-.quiver-node-group.active .quiver-node-label {
-  fill: #000;
+.quiver-node-group.active .quiver-node {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.18));
 }
 
 .quiver-node-label,
 .quiver-weight-label {
-  fill: #172026;
+  fill: #111827;
   font-size: 12px;
   font-weight: 800;
   text-anchor: middle;
+  pointer-events: none;
+}
+
+.quiver-node-label {
+  stroke: none;
 }
 
 .quiver-weight-label {
+  fill: #172026;
   font-size: 10px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
@@ -2230,7 +2316,6 @@ h2 {
 
 .weave-label,
 .weave-bottom-label,
-.weave-cluster-label,
 .weave-edge-number {
   font-size: 11px;
   text-anchor: middle;
@@ -2288,12 +2373,6 @@ h2 {
   fill: #172026;
   font-size: 11px;
   font-weight: 850;
-}
-
-.weave-cluster-label {
-  text-anchor: start;
-  fill: #111;
-  font-size: 12px;
 }
 
 .weave-virtual-label {
