@@ -580,6 +580,31 @@ function identityMatrix(size) {
   return out;
 }
 
+function clearSubmatrix(matrix, indices) {
+  indices.forEach((row) => {
+    indices.forEach((col) => {
+      matrix[row][col] = "0";
+    });
+  });
+}
+
+function embeddedDualBlockMatrix(size, mainPair, dualPair, block) {
+  const out = identityMatrix(size);
+  const indices = [...mainPair, ...dualPair];
+  clearSubmatrix(out, indices);
+  const [[a, b], [c, d]] = block;
+  out[mainPair[0]][mainPair[0]] = a;
+  out[mainPair[0]][mainPair[1]] = b;
+  out[mainPair[1]][mainPair[0]] = c;
+  out[mainPair[1]][mainPair[1]] = d;
+
+  out[dualPair[0]][dualPair[0]] = a;
+  out[dualPair[0]][dualPair[1]] = negateExpression(b);
+  out[dualPair[1]][dualPair[0]] = negateExpression(c);
+  out[dualPair[1]][dualPair[1]] = d;
+  return out;
+}
+
 function xiMatrixA(rank, generator, parameter) {
   const out = identityMatrix(rank + 1);
   out[generator - 1][generator] = parameter;
@@ -606,6 +631,100 @@ function inverseBChiMatrixA(rank, generator, zValue, uValue) {
   return out;
 }
 
+function positiveIndexD(index) {
+  return index - 1;
+}
+
+function negativeIndexD(rank, index) {
+  return 2 * rank - index;
+}
+
+function simpleRootEmbeddingD(rank, generator) {
+  if (generator < rank) {
+    return {
+      root: `epsilon_${generator}-epsilon_${generator + 1}`,
+      mainPair: [positiveIndexD(generator), positiveIndexD(generator + 1)],
+      dualPair: [negativeIndexD(rank, generator + 1), negativeIndexD(rank, generator)],
+      coordinate: [positiveIndexD(generator), positiveIndexD(generator + 1)],
+    };
+  }
+  return {
+    root: `epsilon_${rank - 1}+epsilon_${rank}`,
+    mainPair: [positiveIndexD(rank - 1), negativeIndexD(rank, rank)],
+    dualPair: [positiveIndexD(rank), negativeIndexD(rank, rank - 1)],
+    coordinate: [positiveIndexD(rank - 1), negativeIndexD(rank, rank)],
+  };
+}
+
+function xiMatrixD(rank, generator, parameter) {
+  const embedding = simpleRootEmbeddingD(rank, generator);
+  return embeddedDualBlockMatrix(2 * rank, embedding.mainPair, embedding.dualPair, [
+    ["1", parameter],
+    ["0", "1"],
+  ]);
+}
+
+function bChiMatrixD(rank, generator, zValue, uValue) {
+  const embedding = simpleRootEmbeddingD(rank, generator);
+  return embeddedDualBlockMatrix(2 * rank, embedding.mainPair, embedding.dualPair, [
+    [multiplyExpressions(zValue, uValue), negateExpression(divideExpressions("1", uValue))],
+    [uValue, "0"],
+  ]);
+}
+
+function inverseBChiMatrixD(rank, generator, zValue, uValue) {
+  const embedding = simpleRootEmbeddingD(rank, generator);
+  return embeddedDualBlockMatrix(2 * rank, embedding.mainPair, embedding.dualPair, [
+    ["0", divideExpressions("1", uValue)],
+    [negateExpression(uValue), multiplyExpressions(zValue, uValue)],
+  ]);
+}
+
+function coordinatePinning(datum) {
+  if (datum.family === "A") {
+    return {
+      available: true,
+      family: "A",
+      group: `SL_${datum.rank + 1}(C)`,
+      label: `standard SL_${datum.rank + 1}(C) pinning`,
+      description: "Simple root i is embedded in rows and columns i,i+1; B_i(z)=x_i(z) dot{s_i}.",
+      matrixSize: datum.rank + 1,
+      simpleRoots: Array.from({ length: datum.rank }, (_, idx) => `alpha_${idx + 1}=epsilon_${idx + 1}-epsilon_${idx + 2}`),
+      xiMatrix: (generator, parameter) => xiMatrixA(datum.rank, generator, parameter),
+      bChiMatrix: (generator, zValue, uValue) => bChiMatrixA(datum.rank, generator, zValue, uValue),
+      inverseBChiMatrix: (generator, zValue, uValue) => inverseBChiMatrixA(datum.rank, generator, zValue, uValue),
+      xiCoordinate: (matrix, generator) => matrixEntry(matrix, generator - 1, generator),
+    };
+  }
+  if (datum.family === "D") {
+    return {
+      available: true,
+      family: "D",
+      group: `SO_${2 * datum.rank}(C)`,
+      label: `standard SO_${2 * datum.rank}(C) Chevalley pinning`,
+      description: "The basis is e_1,...,e_n,e_{-n},...,e_{-1}; the form pairs e_i with e_{-i}.",
+      matrixSize: 2 * datum.rank,
+      simpleRoots: Array.from({ length: datum.rank }, (_, idx) => simpleRootEmbeddingD(datum.rank, idx + 1).root),
+      xiMatrix: (generator, parameter) => xiMatrixD(datum.rank, generator, parameter),
+      bChiMatrix: (generator, zValue, uValue) => bChiMatrixD(datum.rank, generator, zValue, uValue),
+      inverseBChiMatrix: (generator, zValue, uValue) => inverseBChiMatrixD(datum.rank, generator, zValue, uValue),
+      xiCoordinate: (matrix, generator) => {
+        const [row, col] = simpleRootEmbeddingD(datum.rank, generator).coordinate;
+        return matrixEntry(matrix, row, col);
+      },
+    };
+  }
+  return {
+    available: false,
+    family: datum.family,
+    group: "",
+    label: `coordinate pinning not implemented for type ${datum.label}`,
+    description: "",
+    matrixSize: 0,
+    simpleRoots: [],
+  };
+}
+
 function multiplyMatrices(left, right) {
   const size = left.length;
   const out = zeroMatrix(size);
@@ -625,14 +744,14 @@ function matrixEntry(matrix, row, col) {
   return matrix[row]?.[col] ?? "0";
 }
 
-function updateDashedMatrixA(rank, generator, zBottom, uBottom, currentY, zTop, uTop) {
+function updateDashedMatrix(pinning, generator, zBottom, uBottom, currentY, zTop, uTop) {
   return multiplyMatrices(
-    multiplyMatrices(inverseBChiMatrixA(rank, generator, zBottom, uBottom), currentY),
-    bChiMatrixA(rank, generator, zTop, uTop),
+    multiplyMatrices(pinning.inverseBChiMatrix(generator, zBottom, uBottom), currentY),
+    pinning.bChiMatrix(generator, zTop, uTop),
   );
 }
 
-function computeZRowsAndDashedRays(rank, words, moves, uRows, stepInfos, coordinatePrefix = "z") {
+function computeZRowsAndDashedRays(pinning, words, moves, uRows, stepInfos, coordinatePrefix = "z") {
   const zRows = [words[0].map((_, idx) => `${coordinatePrefix}${idx + 1}`)];
   const dashedRays = [];
   const triInfoByIndex = new Map(
@@ -664,7 +783,7 @@ function computeZRowsAndDashedRays(rank, words, moves, uRows, stepInfos, coordin
       const initialParameter = negateExpression(
         divideExpressions("1", multiplyExpressions(rowz[p + 1], powerExpression(rowu[p + 1], 2))),
       );
-      let currentY = xiMatrixA(rank, color, initialParameter);
+      let currentY = pinning.xiMatrix(color, initialParameter);
       const crossings = [];
       for (let topIdx = p + 2; topIdx < words[stripIdx].length; topIdx += 1) {
         const botIdx = topIdx - 1;
@@ -672,9 +791,9 @@ function computeZRowsAndDashedRays(rank, words, moves, uRows, stepInfos, coordin
         const zTop = rowz[topIdx];
         const uTop = rowu[topIdx];
         const uBottom = nextu[botIdx];
-        const xiEntry = matrixEntry(currentY, crossingColor - 1, crossingColor);
+        const xiEntry = pinning.xiCoordinate(currentY, crossingColor);
         const zBottom = addExpressions(zTop, xiEntry);
-        const nextY = updateDashedMatrixA(rank, crossingColor, zBottom, uBottom, currentY, zTop, uTop);
+        const nextY = updateDashedMatrix(pinning, crossingColor, zBottom, uBottom, currentY, zTop, uTop);
         crossings.push({
           virtualIndex: crossings.length + 1,
           color: crossingColor,
@@ -699,7 +818,7 @@ function computeZRowsAndDashedRays(rank, words, moves, uRows, stepInfos, coordin
           step: triInfo.step,
           triMoveIndex: stripIdx,
           color,
-          initialY: xiMatrixA(rank, color, initialParameter),
+          initialY: pinning.xiMatrix(color, initialParameter),
           crossings,
           finalY: currentY,
         });
@@ -1639,9 +1758,10 @@ export function buildDoubleInductiveWeave(doubleString, datum) {
 
   const lusztigCycles = computeAllLusztigCycles(words, moves, stepInfos);
   const uRows = computeURows(words, lusztigCycles);
-  const coordinateAvailable = datum.family === "A";
+  const pinning = coordinatePinning(datum);
+  const coordinateAvailable = pinning.available;
   const { zRows, dashedRays } = coordinateAvailable
-    ? computeZRowsAndDashedRays(datum.rank, words, moves, uRows, stepInfos, "y")
+    ? computeZRowsAndDashedRays(pinning, words, moves, uRows, stepInfos, "y")
     : { zRows: placeholderZRows(words), dashedRays: [] };
   const clusterValues = coordinateAvailable
     ? computeClusterValues(words, moves, uRows, zRows, stepInfos)
@@ -1652,6 +1772,14 @@ export function buildDoubleInductiveWeave(doubleString, datum) {
     rank: datum.rank,
     dynkin: datum,
     coordinateAvailable,
+    pinningInfo: {
+      family: pinning.family,
+      group: pinning.group,
+      label: pinning.label,
+      description: pinning.description,
+      matrixSize: pinning.matrixSize,
+      simpleRoots: pinning.simpleRoots,
+    },
     doubleString,
     words,
     moves,

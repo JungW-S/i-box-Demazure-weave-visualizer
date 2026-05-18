@@ -452,7 +452,7 @@ function renderChainQuiver(trace, cycleColors) {
   const header = el("div", "answer-panel-header");
   header.appendChild(el("h3", "", "Quiver"));
   const headerRight = el("div", "answer-panel-actions");
-  headerRight.appendChild(mathText("Q(ℭ) = Q(𝒲_Δ(ℭ))^op"));
+  headerRight.appendChild(mathText("Q(ℭ) = Q(𝒲_{Δ̲}(ℭ))^op"));
   header.appendChild(headerRight);
   section.appendChild(header);
 
@@ -793,6 +793,171 @@ function clusterValuesForDisplay(trace) {
   return (trace.fullClusterValues?.length ? trace.fullClusterValues : trace.bottomWeave.clusterValues) ?? [];
 }
 
+function renderSmallMatrix(rows) {
+  const matrix = el("table", "pinning-matrix");
+  const body = el("tbody");
+  rows.forEach((row) => {
+    const tr = el("tr");
+    row.forEach((entry) => {
+      const td = el("td");
+      td.appendChild(formulaSpan(entry));
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+  matrix.appendChild(body);
+  return matrix;
+}
+
+function renderMatrixBlock(label, rows) {
+  const block = el("div", "pinning-block");
+  block.appendChild(el("div", "pinning-block-label", label));
+  block.appendChild(renderSmallMatrix(rows));
+  return block;
+}
+
+function pinningDNodePosition(rank, node) {
+  const margin = 24;
+  const step = 42;
+  if (node <= rank - 2) {
+    return { x: margin + step * (node - 1), y: 44 };
+  }
+  return {
+    x: margin + step * (rank - 2),
+    y: node === rank - 1 ? 20 : 68,
+  };
+}
+
+function renderPinningDynkin(rank, selected, onSelect) {
+  const margin = 24;
+  const step = 42;
+  const width = margin * 2 + step * (rank - 2);
+  const height = 88;
+  const svg = svgEl("svg");
+  svg.setAttribute("class", "pinning-dynkin-svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", `Dynkin diagram of type D_${rank}`);
+
+  function drawEdge(a, b) {
+    const pa = pinningDNodePosition(rank, a);
+    const pb = pinningDNodePosition(rank, b);
+    const line = svgEl("line");
+    line.setAttribute("x1", String(pa.x));
+    line.setAttribute("y1", String(pa.y));
+    line.setAttribute("x2", String(pb.x));
+    line.setAttribute("y2", String(pb.y));
+    line.setAttribute("class", "pinning-dynkin-edge");
+    svg.appendChild(line);
+  }
+
+  for (let node = 1; node <= rank - 3; node += 1) drawEdge(node, node + 1);
+  drawEdge(rank - 2, rank - 1);
+  drawEdge(rank - 2, rank);
+
+  for (let node = 1; node <= rank; node += 1) {
+    const point = pinningDNodePosition(rank, node);
+    const group = svgEl("g");
+    group.setAttribute("class", `pinning-dynkin-node${node === selected ? " active" : ""}`);
+    group.setAttribute("role", "button");
+    group.setAttribute("tabindex", "0");
+    group.setAttribute("aria-label", `simple root ${node}`);
+    group.addEventListener("click", () => onSelect(node));
+    group.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        onSelect(node);
+      }
+    });
+    const circle = svgEl("circle");
+    circle.setAttribute("cx", String(point.x));
+    circle.setAttribute("cy", String(point.y));
+    circle.setAttribute("r", "12");
+    const text = svgEl("text");
+    text.setAttribute("x", String(point.x));
+    text.setAttribute("y", String(point.y + 4));
+    text.textContent = String(node);
+    group.append(circle, text);
+    svg.appendChild(group);
+  }
+  return svg;
+}
+
+function renderPinningNodeInfo(rank, node) {
+  const panel = el("div", "pinning-node-info");
+  const next = node + 1;
+  const root = node < rank
+    ? `α_${node}=ε_${node}-ε_${next}`
+    : `α_${rank}=ε_${rank - 1}+ε_${rank}`;
+  const firstPair = node < rank
+    ? `(e_${node}, e_${next})`
+    : `(e_${rank - 1}, e_{-${rank}})`;
+  const secondPair = node < rank
+    ? `(e_{-${next}}, e_{-${node}})`
+    : `(e_${rank}, e_{-${rank - 1}})`;
+
+  const header = el("div", "pinning-node-header");
+  header.appendChild(formulaSpan(root));
+  panel.appendChild(header);
+
+  const affected = el("div", "pinning-affected");
+  affected.appendChild(el("span", "", "affected basis"));
+  affected.appendChild(formulaSpan(firstPair, "pinning-chip formula"));
+  affected.appendChild(formulaSpan(secondPair, "pinning-chip formula"));
+  panel.appendChild(affected);
+
+  const grids = el("div", "pinning-block-grid");
+  grids.appendChild(renderMatrixBlock("x_i(t)", [["1", "t"], ["0", "1"]]));
+  grids.appendChild(renderMatrixBlock("dual block", [["1", "-t"], ["0", "1"]]));
+  grids.appendChild(renderMatrixBlock("B_i(z)", [["z", "-1"], ["1", "0"]]));
+  grids.appendChild(renderMatrixBlock("dual block", [["z", "1"], ["-1", "0"]]));
+  panel.appendChild(grids);
+
+  const note = el("p", "small-note");
+  note.textContent = "Only the non-identity local blocks are shown.";
+  panel.appendChild(note);
+  return panel;
+}
+
+function renderPinningDetails(trace) {
+  const info = trace.bottomWeave.pinningInfo;
+  if (!trace.bottomWeave.coordinateAvailable || !info || info.family === "A") return null;
+  const rank = trace.rank;
+
+  const details = el("details", "pinning-details variable-pinning-details");
+  const summary = el("summary");
+  summary.textContent = "Pinning convention";
+  details.appendChild(summary);
+
+  const role = el("p");
+  role.append("Pinning fixes the ");
+  role.appendChild(formulaSpan("z"));
+  role.append("-coordinate realization of the braid variety ");
+  role.appendChild(formulaSpan("X(𝒊)"));
+  role.append(".");
+  details.appendChild(role);
+
+  const basis = el("div", "pinning-basis");
+  basis.appendChild(formulaSpan(`G=${info.group}`));
+  basis.appendChild(formulaSpan(`basis: e_1,...,e_${rank},e_{-${rank}},...,e_{-1}`));
+  basis.appendChild(formulaSpan("<e_i,e_{-i}>=1"));
+  details.appendChild(basis);
+
+  const interactive = el("div", "pinning-interactive");
+  const diagramSlot = el("div", "pinning-diagram-slot");
+  const infoSlot = el("div", "pinning-info-slot");
+  let selected = 1;
+  function update(node) {
+    selected = node;
+    diagramSlot.replaceChildren(renderPinningDynkin(rank, selected, update));
+    infoSlot.replaceChildren(renderPinningNodeInfo(rank, selected));
+  }
+  interactive.append(diagramSlot, infoSlot);
+  details.appendChild(interactive);
+  update(selected);
+  return details;
+}
+
 function renderClusterVariableAnswerPanel(trace, cycleColors, onSelect = null, onClear = null) {
   const values = clusterValuesForDisplay(trace);
   const formulasAvailable = !trace.fullClusterValuesOmitted;
@@ -802,7 +967,7 @@ function renderClusterVariableAnswerPanel(trace, cycleColors, onSelect = null, o
   const header = el("div", "answer-panel-header");
   header.appendChild(el("h3", "", "Cluster Variables"));
   const headerRight = el("div", "answer-panel-actions");
-  headerRight.appendChild(mathText("A_t(𝒲_Δ(ℭ))"));
+  headerRight.appendChild(mathText("A_t(𝒲_{Δ̲}(ℭ))"));
   if (onClear) {
     const allButton = el("button", "clear-selection-button", "Clear");
     allButton.type = "button";
@@ -822,14 +987,16 @@ function renderClusterVariableAnswerPanel(trace, cycleColors, onSelect = null, o
     note.append(" formulas are omitted; the vertices and quiver remain selectable.");
   } else if (onSelect) {
     note.append("Cluster variables attached to the trivalent vertices of ");
-    note.appendChild(formulaSpan("𝒲_Δ(ℭ)"));
+    note.appendChild(formulaSpan("𝒲_{Δ̲}(ℭ)"));
     note.append(".");
   } else {
     note.append("These are the cluster variables attached to the trivalent vertices of ");
-    note.appendChild(formulaSpan("𝒲_Δ(ℭ)"));
+    note.appendChild(formulaSpan("𝒲_{Δ̲}(ℭ)"));
     note.append(".");
   }
   panel.appendChild(note);
+  const pinningDetails = renderPinningDetails(trace);
+  if (pinningDetails) panel.appendChild(pinningDetails);
 
   if (values.length === 0) {
     panel.appendChild(el("p", "small-note", "No trivalent vertex occurs."));
@@ -968,7 +1135,7 @@ function renderInteractiveWeaveViewer(trace, {
   divider.setAttribute("y2", String(junctionY));
   divider.setAttribute("class", "full-weave-divider");
   svg.appendChild(divider);
-  appendText(svg, 22, junctionY - 6, "i_Δ(ℭ)", "full-weave-junction-label");
+  appendText(svg, 22, junctionY - 6, "i_{Δ̲}(ℭ)", "full-weave-junction-label");
 
   weave.moves.forEach((stripMove, idx) => {
     drawViewerMove(weave, stripMove, idx, bottomBoundaryYs[idx], bottomBoundaryYs[idx + 1]);
@@ -1062,7 +1229,7 @@ function renderInteractiveWeaveViewer(trace, {
     note.append(", a dashed edge for ");
     note.appendChild(formulaSpan("Y_j"));
     note.append(", or a trivalent vertex for ");
-    note.appendChild(formulaSpan("A_t(𝒲_Δ(ℭ))"));
+    note.appendChild(formulaSpan("A_t(𝒲_{Δ̲}(ℭ))"));
     note.append(".");
     info.appendChild(note);
   }
@@ -1100,7 +1267,7 @@ function renderInteractiveWeaveViewer(trace, {
     const values = el("div", "variable-value-list");
     const expression = data.final || topCoordinateExpression(trace, data.bottom);
     values.appendChild(renderValueBlock(
-      `${data.label}(𝒲_Δ(ℭ))`,
+      `${data.label}(𝒲_{Δ̲}(ℭ))`,
       expression ? formulaSpan(expression) : el("span", "cluster-answer-meta", "coordinate formula unavailable"),
     ));
     info.appendChild(values);
@@ -2074,7 +2241,7 @@ function renderQuiverAnswerPanel(weave, cycleColors, onSelect = null, onArrowSel
   const header = el("div", "answer-panel-header");
   header.appendChild(el("h3", "", "Quiver"));
   const headerRight = el("div", "answer-panel-actions");
-  headerRight.appendChild(mathText("Q(𝒲_Δ(ℭ))"));
+  headerRight.appendChild(mathText("Q(𝒲_{Δ̲}(ℭ))"));
   header.appendChild(headerRight);
   panel.appendChild(header);
 
@@ -2085,7 +2252,7 @@ function renderQuiverAnswerPanel(weave, cycleColors, onSelect = null, onArrowSel
   const scroller = el("div", "quiver-scroll");
   scroller.appendChild(renderQuiverSvg(quiver, cycleColors, onSelect, onArrowSelect));
   panel.appendChild(scroller);
-  panel.appendChild(renderExchangeMatrixToggle(quiver, "B(Q(𝒲_Δ(ℭ)))"));
+  panel.appendChild(renderExchangeMatrixToggle(quiver, "B(Q(𝒲_{Δ̲}(ℭ)))"));
   return panel;
 }
 
@@ -2398,9 +2565,9 @@ function renderFullWeave(trace) {
 
   body.append(toolbar, interactiveViewer, resultView);
   return renderCard(
-    "𝒲_Δ(ℭ)",
+    "𝒲_{Δ̲}(ℭ)",
     body,
-    "𝒲_Δ(ℭ) is the vertical concatenation of 𝒲^T_Δ(ℭ) and 𝒲^B_Δ(ℭ) along i_Δ(ℭ).",
+    "𝒲_{Δ̲}(ℭ) is the vertical concatenation of 𝒲^T_{Δ̲}(ℭ) and 𝒲^B_{Δ̲}(ℭ) along i_{Δ̲}(ℭ).",
   );
 }
 
@@ -2450,7 +2617,7 @@ function renderConstructionStepper(root) {
   [
     ["chain", "ℭ"],
     ["string", "s_{Δ̲}(ℭ)"],
-    ["whole", "𝒲_Δ(ℭ)"],
+    ["whole", "𝒲_{Δ̲}(ℭ)"],
   ].forEach(([mode, label], idx) => {
     const button = el("button", "step-button");
     button.type = "button";

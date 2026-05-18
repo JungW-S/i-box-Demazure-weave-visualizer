@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admissible Chain and Demazure Weave</title>
+    <title>Type D_n Admissible Chain and Demazure Weave</title>
     <link rel="stylesheet" href="./style.css">
   </head>
   <body>
@@ -11,12 +11,12 @@
       <header class="page-header">
         <div>
           <p class="eyebrow">i-boxes and Demazure weaves</p>
-          <h1><span class="formula header-formula">ℭ</span> to <span class="formula header-formula">𝒲<sub><span class="notation-underline">Δ</span></sub>(ℭ)</span></h1>
+          <h1><span class="formula header-formula">ℭ</span> to <span class="formula header-formula">𝒲<sub><span class="notation-underline">Δ</span></sub>(ℭ)</span> in type D<sub>n</sub></h1>
           <p class="subtitle">
-            Construct the Demazure weave associated with an admissible chain.
+            Construct the Demazure weave associated with a type D admissible chain.
           </p>
           <div class="page-links">
-            <a class="page-link" href="./d-experiment.html">Type D<sub>n</sub></a>
+            <a class="page-link" href="./index.html">Type A<sub>n</sub></a>
           </div>
         </div>
       </header>
@@ -33,8 +33,8 @@
             </div>
             <div class="random-input-grid">
               <label class="field">
-                <span>Type A rank n</span>
-                <input id="rank-input" name="rank" type="number" min="1" step="1" inputmode="numeric">
+                <span>Type D rank n</span>
+                <input id="rank-input" name="rank" type="number" min="4" step="1" inputmode="numeric">
               </label>
 
               <label class="field">
@@ -44,7 +44,7 @@
             </div>
             <button type="button" id="random-button" class="secondary-button random-button">Random ℭ</button>
             <p class="input-note">
-              Randomly chooses the underlying <span class="notation-underline">Δ</span>, LR sequence, and admissible chain in type A<sub>n</sub>.
+              Randomly chooses the underlying <span class="notation-underline">Δ</span>, LR sequence, and admissible chain in type D<sub>n</sub>.
             </p>
           </section>
 
@@ -81,6 +81,6 @@
       </section>
     </main>
 
-    <script type="module" src="./src/app.mjs"></script>
+    <script type="module" src="./src/d-experiment.mjs"></script>
   </body>
 </html>

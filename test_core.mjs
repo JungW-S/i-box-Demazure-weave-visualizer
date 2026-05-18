@@ -228,8 +228,69 @@ const d4Trace = buildTrace({
 });
 assertEqual(d4Trace.dynkin.label, "D_4", "type D_4 input is accepted");
 assertEqual(standardHalfTwistWord(4, "D").length, 12, "type D_4 underline Delta has length |Phi^+|=12");
-assertEqual(d4Trace.bottomWeave.coordinateAvailable, false, "coordinate formulas are marked unavailable outside type A");
-assertEqual(d4Trace.fullClusterValuesOmittedReason, "Coordinate formulas are currently implemented only in type A.", "D_4 explains the coordinate-formula limitation");
+assertEqual(d4Trace.bottomWeave.coordinateAvailable, true, "coordinate formulas are available for the local D_4 pinning check");
+assertEqual(d4Trace.bottomWeave.pinningInfo.group, "SO_8(C)", "type D_4 uses the standard SO_8 Chevalley pinning");
+assertEqual(d4Trace.fullClusterValues.map((value) => value.expression), ["z1", "z2", "z3", "z4"], "D_4 default all-R variables pull back to the z-coordinates");
+
+const d4BranchingTrace = buildTrace({
+  family: "D",
+  rank: "4",
+  u: "2 1 3 4 2",
+  rxw: standardHalfTwistWord(4, "D").join(" "),
+  lr: "R R R R",
+});
+assertEqual(
+  d4BranchingTrace.fullClusterValues.map((value) => value.expression),
+  ["z1", "z2", "z3", "z4", "-z2*z3*z4 + z1*z5"],
+  "D_4 branching T-system variable uses the three adjacent arms",
+);
+
+[
+  "L L L",
+  "L R L",
+  "R L R",
+  "L R R",
+  "R L L",
+].forEach((lr) => {
+  const mixedTrace = buildTrace({
+    family: "D",
+    rank: "4",
+    u: "1 2 3 4",
+    rxw: standardHalfTwistWord(4, "D").join(" "),
+    lr,
+  });
+  assertEqual(mixedTrace.dynkin.label, "D_4", `type D_4 mixed LR input ${lr} is accepted`);
+  assertEqual(mixedTrace.bottomWeave.clusterValues.length, 4, `type D_4 mixed LR input ${lr} has one trivalent vertex for each chain entry`);
+});
+
+const d5Delta = standardHalfTwistWord(5, "D");
+assertEqual(d5Delta.length, 20, "type D_5 underline Delta has length |Phi^+|=20");
+const d5Trace = buildTrace({
+  family: "D",
+  rank: "5",
+  u: "1 2 3 4 5",
+  rxw: d5Delta.join(" "),
+  lr: "R R R R",
+});
+assertEqual(d5Trace.dynkin.label, "D_5", "type D_5 input is accepted");
+assertEqual(d5Trace.bottomWeave.coordinateAvailable, true, "coordinate formulas are available for the type D_5 pinning check");
+assertEqual(d5Trace.bottomWeave.pinningInfo.group, "SO_10(C)", "type D_5 uses the standard SO_10 Chevalley pinning");
+
+const d6Delta = standardHalfTwistWord(6, "D");
+assertEqual(d6Delta.length, 30, "type D_6 underline Delta has length |Phi^+|=30");
+let d6Failed = false;
+try {
+  buildTrace({
+    family: "D",
+    rank: "6",
+    u: "1 2 3 4 5",
+    rxw: d6Delta.join(" "),
+    lr: "R R R R",
+  });
+} catch (error) {
+  d6Failed = /rendering D_6 and higher currently requires an optimized braid-path algorithm/.test(error.message);
+}
+assert(d6Failed, "type D_6 computes underline Delta but does not start full browser rendering yet");
 
 assertEqual(standardHalfTwistWord(6, "E").length, 36, "type E_6 underline Delta has length |Phi^+|=36");
 assertEqual(standardHalfTwistWord(7, "E").length, 63, "type E_7 underline Delta has length |Phi^+|=63");
@@ -245,7 +306,7 @@ try {
     lr: "R",
   });
 } catch (error) {
-  eFailed = /optimized braid-path/.test(error.message);
+  eFailed = /browser rendering is currently enabled only for type A and type D/.test(error.message);
 }
 assert(eFailed, "large non-A types fail quickly instead of starting an exponential braid-path search");
 

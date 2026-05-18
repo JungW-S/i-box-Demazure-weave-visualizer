@@ -435,8 +435,11 @@ export function buildTrace(input) {
   const determinantialModules = computeDeterminantialModules({ datum, u, chain });
   const doubleString = makeDoubleString({ datum, rxw, chain });
   const doubleSummary = summarizeDoubleString(doubleString, rxw.length);
-  if (family !== "A" && datum.positiveRoots.length > 12) {
-    throw new Error(`The reduced expression Δ̲ for ${datum.label} has been computed, but full weave construction is currently enabled only for type A and D_4. Type ${datum.label} still needs an optimized braid-path algorithm before it can be rendered in the browser.`);
+  if (family === "D" && datum.positiveRoots.length > 20) {
+    throw new Error(`The reduced expression Δ̲ for ${datum.label} is computed, but rendering D_6 and higher currently requires an optimized braid-path algorithm. The public page supports D_4 and D_5 reliably.`);
+  }
+  if (family !== "A" && family !== "D") {
+    throw new Error(`The reduced expression Δ̲ for ${datum.label} has been computed, but browser rendering is currently enabled only for type A and type D.`);
   }
   const topWeave = buildTopWeave({ datum, rxw, u, c });
   const bottomWeave = buildDoubleInductiveWeave(doubleString, datum);
@@ -463,7 +466,7 @@ export function buildTrace(input) {
     fullClusterValuesOmitted: !shouldExpandFullClusterValues,
     fullClusterValuesOmittedReason: bottomWeave.coordinateAvailable
       ? "The expanded expression is large."
-      : "Coordinate formulas are currently implemented only in type A.",
+      : "Coordinate formulas are not implemented for this type.",
   };
 }
 
