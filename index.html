@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admissible Chain and Demazure Weave</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">i-boxes and Demazure weaves</p>
+          <h1><span class="formula header-formula">ℭ</span> to <span class="formula header-formula">𝒲<sub>Δ</sub>(ℭ)</span></h1>
+          <p class="subtitle">
+            Construct the Demazure weave associated with an admissible chain.
+          </p>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <form id="input-form" class="input-panel">
+          <div class="panel-header">
+            <h2>Input</h2>
+          </div>
+
+          <section class="input-subpanel random-input-panel">
+            <div class="input-subpanel-header">
+              <h3>Random admissible chain <span class="formula">ℭ</span></h3>
+            </div>
+            <div class="random-input-grid">
+              <label class="field">
+                <span>Type A rank n</span>
+                <input id="rank-input" name="rank" type="number" min="1" step="1" inputmode="numeric">
+              </label>
+
+              <label class="field">
+                <span>Length r</span>
+                <input id="r-input" name="r" type="number" min="1" step="1" inputmode="numeric">
+              </label>
+            </div>
+            <button type="button" id="random-button" class="secondary-button random-button">Random ℭ</button>
+            <p class="input-note">
+              Randomly chooses the underlying <span class="notation-underline">Δ</span>, LR sequence, and admissible chain in type A<sub>n</sub>.
+            </p>
+          </section>
+
+          <section class="input-subpanel manual-input-panel">
+            <div class="input-subpanel-header">
+              <h3>Manual input</h3>
+            </div>
+
+            <label class="field">
+              <span>Expression sequence <span class="notation-underline">i</span></span>
+              <textarea id="u-input" name="u" rows="2" spellcheck="false"></textarea>
+            </label>
+
+            <label class="field">
+              <span>Expression sequence <span class="notation-underline">Δ</span></span>
+              <textarea id="rxw-input" name="rxw" rows="2" spellcheck="false"></textarea>
+            </label>
+
+            <label class="field">
+              <span>LR sequence</span>
+              <textarea id="lr-input" name="lr" rows="2" spellcheck="false"></textarea>
+            </label>
+          </section>
+
+          <button type="submit" class="primary-button">Run construction</button>
+          <p class="input-note">
+            Entries may be separated by spaces, commas, or line breaks.
+            The initial envelope is c = #{L entries} + 1.
+          </p>
+          <div id="error-box" class="error-box" hidden></div>
+        </form>
+
+        <section id="output" class="output-panel" aria-live="polite"></section>
+      </section>
+    </main>
+
+    <script type="module" src="./src/app.mjs"></script>
+  </body>
+</html>
