@@ -897,24 +897,32 @@ function renderPinningNodeInfo(rank, node) {
     : `(e_${rank}, e_{-${rank - 1}})`;
 
   const header = el("div", "pinning-node-header");
+  header.appendChild(el("span", "", "root written with ε"));
   header.appendChild(formulaSpan(root));
   panel.appendChild(header);
 
+  const explanation = el("p", "small-note pinning-node-note");
+  explanation.appendChild(formulaSpan("ε_i"));
+  explanation.append(" is not a basis vector; it is the coordinate symbol used to write roots. ");
+  explanation.appendChild(formulaSpan("e_i"));
+  explanation.append(" is a vector-basis element. The 2x2 blocks below are inserted on the displayed basis pairs.");
+  panel.appendChild(explanation);
+
   const affected = el("div", "pinning-affected");
-  affected.appendChild(el("span", "", "affected basis"));
+  affected.appendChild(el("span", "", "basis pairs for the local blocks"));
   affected.appendChild(formulaSpan(firstPair, "pinning-chip formula"));
   affected.appendChild(formulaSpan(secondPair, "pinning-chip formula"));
   panel.appendChild(affected);
 
   const grids = el("div", "pinning-block-grid");
-  grids.appendChild(renderMatrixBlock("x_i(t)", [["1", "t"], ["0", "1"]]));
-  grids.appendChild(renderMatrixBlock("dual block", [["1", "-t"], ["0", "1"]]));
-  grids.appendChild(renderMatrixBlock("B_i(z)", [["z", "-1"], ["1", "0"]]));
-  grids.appendChild(renderMatrixBlock("dual block", [["z", "1"], ["-1", "0"]]));
+  grids.appendChild(renderMatrixBlock("x_i(t) on first basis pair", [["1", "t"], ["0", "1"]]));
+  grids.appendChild(renderMatrixBlock("x_i(t) on second basis pair", [["1", "-t"], ["0", "1"]]));
+  grids.appendChild(renderMatrixBlock("B_i(z) on first basis pair", [["z", "-1"], ["1", "0"]]));
+  grids.appendChild(renderMatrixBlock("B_i(z) on second basis pair", [["z", "1"], ["-1", "0"]]));
   panel.appendChild(grids);
 
   const note = el("p", "small-note");
-  note.textContent = "Only the non-identity local blocks are shown.";
+  note.textContent = "All other vector-basis directions are unchanged.";
   panel.appendChild(note);
   return panel;
 }
@@ -930,10 +938,12 @@ function renderPinningDetails(trace) {
   details.appendChild(summary);
 
   const role = el("p");
-  role.append("Pinning fixes the ");
-  role.appendChild(formulaSpan("z"));
-  role.append("-coordinate realization of the braid variety ");
-  role.appendChild(formulaSpan("X(𝒊)"));
+  role.append("This panel fixes the coordinate convention for type ");
+  role.appendChild(formulaSpan("D"));
+  role.append(". Roots are written with ");
+  role.appendChild(formulaSpan("ε_i"));
+  role.append("; matrix blocks are inserted on basis vectors ");
+  role.appendChild(formulaSpan("e_i"));
   role.append(".");
   details.appendChild(role);
 
