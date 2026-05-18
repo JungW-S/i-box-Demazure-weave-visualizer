@@ -227,6 +227,10 @@ h2 {
   padding: 0 10px 9px;
 }
 
+.pinning-intro {
+  color: var(--ink);
+}
+
 .variable-pinning-details {
   margin-top: 8px;
   background: #fbfcfc;
@@ -310,51 +314,74 @@ h2 {
 .pinning-node-info {
   display: grid;
   gap: 8px;
+  align-content: start;
 }
 
-.pinning-node-header,
-.pinning-affected {
+.pinning-node-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
 }
 
-.pinning-affected > span:first-child {
+.pinning-node-title {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.pinning-domain-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.pinning-domain-label {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
-  text-transform: none;
-}
-
-.pinning-node-header > span:first-child {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.pinning-details .pinning-node-note {
-  padding: 0;
-}
-
-.pinning-block-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.pinning-block {
-  display: grid;
-  gap: 5px;
-  border: 1px solid var(--soft-line);
-  border-radius: 6px;
-  background: #fff;
-  padding: 7px;
 }
 
 .pinning-block-label {
   color: var(--muted);
   font-size: 11px;
+  font-weight: 800;
+}
+
+.pinning-phi-block {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--soft-line);
+  border-radius: 7px;
+  background: #fff;
+  padding: 8px;
+}
+
+.pinning-phi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.pinning-phi-plane {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.pinning-fixed-note {
+  padding: 0;
+}
+
+.pinning-plane-matrix {
+  display: grid;
+  gap: 3px;
+}
+
+.pinning-plane-label {
+  color: var(--muted);
+  font-size: 10px;
   font-weight: 800;
 }
 
@@ -370,12 +397,28 @@ h2 {
   text-align: center;
 }
 
+.pinning-derived {
+  border-top: 1px solid var(--soft-line);
+  padding-top: 6px;
+}
+
+.pinning-details .pinning-derived summary {
+  padding: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.pinning-derived .pinning-formula-line {
+  margin-top: 5px;
+}
+
 @media (max-width: 760px) {
   .pinning-interactive {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .pinning-block-grid {
+  .pinning-phi-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }

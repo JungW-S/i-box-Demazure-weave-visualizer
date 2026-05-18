@@ -1,6 +1,5 @@
 import {
   buildTrace,
-  defaultExample,
   randomExample,
   standardHalfTwistWord,
 } from "./core.mjs";
@@ -16,9 +15,18 @@ const output = document.querySelector("#output");
 const errorBox = document.querySelector("#error-box");
 const randomButton = document.querySelector("#random-button");
 
+const defaultDExample = {
+  family: "D",
+  rank: "4",
+  r: "5",
+  u: "2 1 3 4 2",
+  rxw: standardHalfTwistWord(4, "D").join(" "),
+  lr: "R R R R",
+};
+
 function readInput() {
   return {
-    family: "A",
+    family: "D",
     rank: rankInput.value,
     u: uInput.value,
     rxw: rxwInput.value,
@@ -34,11 +42,21 @@ function writeInput(values) {
   lrInput.value = values.lr;
 }
 
+function setError(message) {
+  errorBox.textContent = message;
+  errorBox.hidden = false;
+}
+
+function clearError() {
+  errorBox.textContent = "";
+  errorBox.hidden = true;
+}
+
 function refreshHalfTwistWord() {
   try {
     const rank = Number.parseInt(rankInput.value, 10);
-    if (!Number.isInteger(rank) || rank < 1) return;
-    rxwInput.value = standardHalfTwistWord(rank).join(" ");
+    if (!Number.isInteger(rank) || rank < 4) return;
+    rxwInput.value = standardHalfTwistWord(rank, "D").join(" ");
   } catch (error) {
     setError(error.message);
   }
@@ -49,21 +67,21 @@ function inputFromUrl() {
   const wantsRandom = ["1", "true", "yes"].includes(String(params.get("random") ?? "").toLowerCase());
   if (wantsRandom) {
     return randomExample({
-      rank: params.get("rank") ?? params.get("n"),
-      r: params.get("r"),
+      family: "D",
+      rank: params.get("rank") ?? params.get("n") ?? defaultDExample.rank,
+      r: params.get("r") ?? defaultDExample.r,
     });
   }
-
   const hasDirectInput = ["rank", "n", "u", "rxw", "lr"].some((key) => params.has(key));
-  if (!hasDirectInput) return defaultExample;
-  const u = params.get("u") ?? defaultExample.u;
+  if (!hasDirectInput) return defaultDExample;
+  const u = params.get("u") ?? defaultDExample.u;
   return {
-    family: "A",
-    rank: params.get("rank") ?? params.get("n") ?? defaultExample.rank,
-    r: params.get("r") ?? String(u.trim().split(/\s+/).filter(Boolean).length || defaultExample.r),
+    family: "D",
+    rank: params.get("rank") ?? params.get("n") ?? defaultDExample.rank,
+    r: params.get("r") ?? String(u.trim().split(/\s+/).filter(Boolean).length || defaultDExample.r),
     u,
-    rxw: params.get("rxw") ?? defaultExample.rxw,
-    lr: params.get("lr") ?? defaultExample.lr,
+    rxw: params.get("rxw") ?? defaultDExample.rxw,
+    lr: params.get("lr") ?? defaultDExample.lr,
   };
 }
 
@@ -95,16 +113,6 @@ function clearDetailUrl() {
   window.history.replaceState(null, "", url);
 }
 
-function setError(message) {
-  errorBox.textContent = message;
-  errorBox.hidden = false;
-}
-
-function clearError() {
-  errorBox.textContent = "";
-  errorBox.hidden = true;
-}
-
 function runConstruction(options = {}) {
   try {
     clearError();
@@ -127,6 +135,7 @@ randomButton.addEventListener("click", () => {
   try {
     clearError();
     writeInput(randomExample({
+      family: "D",
       rank: rankInput.value,
       r: rInput.value,
     }));

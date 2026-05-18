@@ -809,11 +809,49 @@ function renderSmallMatrix(rows) {
   return matrix;
 }
 
-function renderMatrixBlock(label, rows) {
-  const block = el("div", "pinning-block");
-  block.appendChild(el("div", "pinning-block-label", label));
-  block.appendChild(renderSmallMatrix(rows));
+function basisOrderText(rank) {
+  const positive = Array.from({ length: rank }, (_, idx) => `e_${idx + 1}`);
+  const negative = Array.from({ length: rank }, (_, idx) => `e_{-${rank - idx}}`);
+  return `basis=(${[...positive, ...negative].join(",")})`;
+}
+
+function basisOrderTextA(rank) {
+  const basis = Array.from({ length: rank + 1 }, (_, idx) => `e_${idx + 1}`);
+  return `basis=(${basis.join(",")})`;
+}
+
+function renderPinningFormulaLine(text) {
+  const line = el("div", "pinning-formula-line");
+  line.appendChild(formulaSpan(text, "formula"));
+  return line;
+}
+
+function renderPhiBlock(firstPair, secondPair = null) {
+  const block = el("div", "pinning-phi-block");
+  const title = el("div", "pinning-block-label", "φ_i(A)");
+  block.appendChild(title);
+
+  const planes = el("div", "pinning-phi-grid");
+  const first = el("div", "pinning-phi-plane");
+  first.appendChild(formulaSpan(`on ${firstPair}`, "formula pinning-plane-label"));
+  first.appendChild(renderSmallMatrix([["a", "b"], ["c", "d"]]));
+
+  planes.appendChild(first);
+  if (secondPair !== null) {
+    const second = el("div", "pinning-phi-plane");
+    second.appendChild(formulaSpan(`on ${secondPair}`, "formula pinning-plane-label"));
+    second.appendChild(renderSmallMatrix([["a", "-b"], ["-c", "d"]]));
+    planes.appendChild(second);
+  }
+  block.appendChild(planes);
+  block.appendChild(el("p", "small-note pinning-fixed-note", "All other basis vectors are fixed."));
   return block;
+}
+
+function pinningANodePosition(rank, node) {
+  const margin = 24;
+  const step = 42;
+  return { x: margin + step * (node - 1), y: 44 };
 }
 
 function pinningDNodePosition(rank, node) {
@@ -828,7 +866,58 @@ function pinningDNodePosition(rank, node) {
   };
 }
 
-function renderPinningDynkin(rank, selected, onSelect) {
+function renderPinningDynkinA(rank, selected, onSelect) {
+  const margin = 24;
+  const step = 42;
+  const width = margin * 2 + step * (rank - 1);
+  const height = 88;
+  const svg = svgEl("svg");
+  svg.setAttribute("class", "pinning-dynkin-svg");
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.setAttribute("role", "img");
+  svg.setAttribute("aria-label", `Dynkin diagram of type A_${rank}`);
+
+  for (let node = 1; node <= rank - 1; node += 1) {
+    const pa = pinningANodePosition(rank, node);
+    const pb = pinningANodePosition(rank, node + 1);
+    const line = svgEl("line");
+    line.setAttribute("x1", String(pa.x));
+    line.setAttribute("y1", String(pa.y));
+    line.setAttribute("x2", String(pb.x));
+    line.setAttribute("y2", String(pb.y));
+    line.setAttribute("class", "pinning-dynkin-edge");
+    svg.appendChild(line);
+  }
+
+  for (let node = 1; node <= rank; node += 1) {
+    const point = pinningANodePosition(rank, node);
+    const group = svgEl("g");
+    group.setAttribute("class", `pinning-dynkin-node${node === selected ? " active" : ""}`);
+    group.setAttribute("role", "button");
+    group.setAttribute("tabindex", "0");
+    group.setAttribute("aria-label", `simple root ${node}`);
+    group.addEventListener("click", () => onSelect(node));
+    group.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        onSelect(node);
+      }
+    });
+    const circle = svgEl("circle");
+    circle.setAttribute("cx", String(point.x));
+    circle.setAttribute("cy", String(point.y));
+    circle.setAttribute("r", "12");
+    const text = svgEl("text");
+    text.setAttribute("x", String(point.x));
+    text.setAttribute("y", String(point.y + 4));
+    text.textContent = String(node);
+    group.append(circle, text);
+    svg.appendChild(group);
+  }
+  return svg;
+}
+
+function renderPinningDynkinD(rank, selected, onSelect) {
   const margin = 24;
   const step = 42;
   const width = margin * 2 + step * (rank - 2);
@@ -883,12 +972,34 @@ function renderPinningDynkin(rank, selected, onSelect) {
   return svg;
 }
 
-function renderPinningNodeInfo(rank, node) {
+function renderPinningNodeInfoA(rank, node) {
+  const panel = el("div", "pinning-node-info");
+  const pair = `(e_${node}, e_${node + 1})`;
+
+  const header = el("div", "pinning-node-header");
+  header.appendChild(formulaSpan(`node ${node}: φ_${node}`, "formula pinning-node-title"));
+  panel.appendChild(header);
+
+  const domain = el("div", "pinning-domain-row");
+  domain.appendChild(formulaSpan("A=", "formula pinning-domain-label"));
+  domain.appendChild(renderSmallMatrix([["a", "b"], ["c", "d"]]));
+  domain.appendChild(formulaSpan("in SL_2(C)", "formula pinning-domain-label"));
+  panel.appendChild(domain);
+
+  panel.appendChild(renderPhiBlock(pair));
+
+  const derivedDetails = el("details", "pinning-derived");
+  derivedDetails.appendChild(el("summary", "", "B_i(z) from φ_i"));
+  derivedDetails.appendChild(renderPinningFormulaLine("x_i(z)=φ_i([[1,z],[0,1]])"));
+  derivedDetails.appendChild(renderPinningFormulaLine("dot{s_i}=φ_i([[0,-1],[1,0]])"));
+  derivedDetails.appendChild(renderPinningFormulaLine("B_i(z)=φ_i([[z,-1],[1,0]])"));
+  panel.appendChild(derivedDetails);
+  return panel;
+}
+
+function renderPinningNodeInfoD(rank, node) {
   const panel = el("div", "pinning-node-info");
   const next = node + 1;
-  const root = node < rank
-    ? `α_${node}=ε_${node}-ε_${next}`
-    : `α_${rank}=ε_${rank - 1}+ε_${rank}`;
   const firstPair = node < rank
     ? `(e_${node}, e_${next})`
     : `(e_${rank - 1}, e_{-${rank}})`;
@@ -897,60 +1008,56 @@ function renderPinningNodeInfo(rank, node) {
     : `(e_${rank}, e_{-${rank - 1}})`;
 
   const header = el("div", "pinning-node-header");
-  header.appendChild(el("span", "", "root written with ε"));
-  header.appendChild(formulaSpan(root));
+  header.appendChild(formulaSpan(`node ${node}: φ_${node}`, "formula pinning-node-title"));
   panel.appendChild(header);
 
-  const explanation = el("p", "small-note pinning-node-note");
-  explanation.appendChild(formulaSpan("ε_i"));
-  explanation.append(" is not a basis vector; it is the coordinate symbol used to write roots. ");
-  explanation.appendChild(formulaSpan("e_i"));
-  explanation.append(" is a vector-basis element. The 2x2 blocks below are inserted on the displayed basis pairs.");
-  panel.appendChild(explanation);
+  const domain = el("div", "pinning-domain-row");
+  domain.appendChild(formulaSpan("A=", "formula pinning-domain-label"));
+  domain.appendChild(renderSmallMatrix([["a", "b"], ["c", "d"]]));
+  domain.appendChild(formulaSpan("in SL_2(C)", "formula pinning-domain-label"));
+  panel.appendChild(domain);
 
-  const affected = el("div", "pinning-affected");
-  affected.appendChild(el("span", "", "basis pairs for the local blocks"));
-  affected.appendChild(formulaSpan(firstPair, "pinning-chip formula"));
-  affected.appendChild(formulaSpan(secondPair, "pinning-chip formula"));
-  panel.appendChild(affected);
+  panel.appendChild(renderPhiBlock(firstPair, secondPair));
 
-  const grids = el("div", "pinning-block-grid");
-  grids.appendChild(renderMatrixBlock("x_i(t) on first basis pair", [["1", "t"], ["0", "1"]]));
-  grids.appendChild(renderMatrixBlock("x_i(t) on second basis pair", [["1", "-t"], ["0", "1"]]));
-  grids.appendChild(renderMatrixBlock("B_i(z) on first basis pair", [["z", "-1"], ["1", "0"]]));
-  grids.appendChild(renderMatrixBlock("B_i(z) on second basis pair", [["z", "1"], ["-1", "0"]]));
-  panel.appendChild(grids);
-
-  const note = el("p", "small-note");
-  note.textContent = "All other vector-basis directions are unchanged.";
-  panel.appendChild(note);
+  const derivedDetails = el("details", "pinning-derived");
+  derivedDetails.appendChild(el("summary", "", "B_i(z) from φ_i"));
+  derivedDetails.appendChild(renderPinningFormulaLine("x_i(z)=φ_i([[1,z],[0,1]])"));
+  derivedDetails.appendChild(renderPinningFormulaLine("dot{s_i}=φ_i([[0,-1],[1,0]])"));
+  derivedDetails.appendChild(renderPinningFormulaLine("B_i(z)=φ_i([[z,-1],[1,0]])"));
+  panel.appendChild(derivedDetails);
   return panel;
 }
 
 function renderPinningDetails(trace) {
   const info = trace.bottomWeave.pinningInfo;
-  if (!trace.bottomWeave.coordinateAvailable || !info || info.family === "A") return null;
+  if (!trace.bottomWeave.coordinateAvailable || !info) return null;
   const rank = trace.rank;
+  const family = info.family;
+  if (family !== "A" && family !== "D") return null;
 
   const details = el("details", "pinning-details variable-pinning-details");
   const summary = el("summary");
-  summary.textContent = "Pinning convention";
+  summary.textContent = "Pinning";
   details.appendChild(summary);
 
-  const role = el("p");
-  role.append("This panel fixes the coordinate convention for type ");
-  role.appendChild(formulaSpan("D"));
-  role.append(". Roots are written with ");
-  role.appendChild(formulaSpan("ε_i"));
-  role.append("; matrix blocks are inserted on basis vectors ");
-  role.appendChild(formulaSpan("e_i"));
+  const role = el("p", "pinning-intro");
+  role.append("A pinning fixes ");
+  role.appendChild(formulaSpan("φ_i:SL_2(C)->G"));
+  role.append(" for each node ");
+  role.appendChild(formulaSpan("i"));
   role.append(".");
   details.appendChild(role);
 
   const basis = el("div", "pinning-basis");
-  basis.appendChild(formulaSpan(`G=${info.group}`));
-  basis.appendChild(formulaSpan(`basis: e_1,...,e_${rank},e_{-${rank}},...,e_{-1}`));
-  basis.appendChild(formulaSpan("<e_i,e_{-i}>=1"));
+  if (family === "A") {
+    basis.appendChild(formulaSpan(`G=SL_${rank + 1}(C)`));
+    basis.appendChild(formulaSpan(`V=C^{${rank + 1}}`));
+    basis.appendChild(formulaSpan(basisOrderTextA(rank)));
+  } else {
+    basis.appendChild(formulaSpan(`G=SO_${2 * rank}(C)`));
+    basis.appendChild(formulaSpan(`V=C^{${2 * rank}}`));
+    basis.appendChild(formulaSpan(basisOrderText(rank)));
+  }
   details.appendChild(basis);
 
   const interactive = el("div", "pinning-interactive");
@@ -959,8 +1066,13 @@ function renderPinningDetails(trace) {
   let selected = 1;
   function update(node) {
     selected = node;
-    diagramSlot.replaceChildren(renderPinningDynkin(rank, selected, update));
-    infoSlot.replaceChildren(renderPinningNodeInfo(rank, selected));
+    if (family === "A") {
+      diagramSlot.replaceChildren(renderPinningDynkinA(rank, selected, update));
+      infoSlot.replaceChildren(renderPinningNodeInfoA(rank, selected));
+    } else {
+      diagramSlot.replaceChildren(renderPinningDynkinD(rank, selected, update));
+      infoSlot.replaceChildren(renderPinningNodeInfoD(rank, selected));
+    }
   }
   interactive.append(diagramSlot, infoSlot);
   details.appendChild(interactive);
@@ -1005,11 +1117,11 @@ function renderClusterVariableAnswerPanel(trace, cycleColors, onSelect = null, o
     note.append(".");
   }
   panel.appendChild(note);
-  const pinningDetails = renderPinningDetails(trace);
-  if (pinningDetails) panel.appendChild(pinningDetails);
 
   if (values.length === 0) {
     panel.appendChild(el("p", "small-note", "No trivalent vertex occurs."));
+    const pinningDetails = renderPinningDetails(trace);
+    if (pinningDetails) panel.appendChild(pinningDetails);
     return panel;
   }
 
@@ -1049,6 +1161,8 @@ function renderClusterVariableAnswerPanel(trace, cycleColors, onSelect = null, o
     list.appendChild(item);
   });
   panel.appendChild(list);
+  const pinningDetails = renderPinningDetails(trace);
+  if (pinningDetails) panel.appendChild(pinningDetails);
   return panel;
 }
 

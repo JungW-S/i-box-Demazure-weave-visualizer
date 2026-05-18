@@ -6,10 +6,11 @@ paper.
 The page is a static JavaScript app. It does not call Sage or any server-side
 code after the files are served.
 
-The public visualizer currently has a type `A_n` page. It implements:
+The public visualizer has a type `A_n` page and a type `D_n` experimental
+page. It implements:
 
 - compute a reduced expression `\underline{\Delta}` for the longest element
-  `w_0` in type `A_n`,
+  `w_0` in type `A_n`, and use the standard stable expression in type `D_n`,
 - parse an expression sequence `\underline{i}`,
 - parse an LR sequence,
 - compute the initial envelope `c = #{L entries} + 1`,
@@ -31,12 +32,17 @@ The public visualizer currently has a type `A_n` page. It implements:
 - compute and display the quiver
   `Q(\mathcal W_{\underline{\Delta}}(\mathfrak C))
   = Q(\mathcal W^B_{\underline{\Delta}}(\mathfrak C))` on the final page,
+- show the pinning convention used for the displayed cluster variables,
 - keep the current input and selected view in the URL after running the
   construction, so the resulting page can be shared directly.
 
 The Random button uses only the Dynkin type rank `n` and the length `r`; it
 randomizes the expression sequence `\underline{i}`, the expression sequence
-`\underline{\Delta}`, and the LR sequence.
+`\underline{\Delta}`, and the LR sequence in type `A_n`. In type `D_n`, it
+uses the standard `\underline{\Delta}` and randomizes `\underline{i}` and the
+LR sequence. The public type `D_n` page supports `D_4` and `D_5` reliably; for
+`D_6` and higher, the page reports that an optimized braid-path algorithm is
+needed.
 
 The Sage prototype and the calculation note in this folder remain references
 for the double inductive weave calculation rules.
@@ -53,6 +59,7 @@ Then open:
 
 ```text
 http://127.0.0.1:8766/
+http://127.0.0.1:8766/d-experiment.html
 ```
 
 Useful URL parameters:
