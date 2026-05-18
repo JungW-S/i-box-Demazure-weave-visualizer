@@ -88,32 +88,6 @@ h2 {
   line-height: 1.55;
 }
 
-.page-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 14px;
-}
-
-.page-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #fff;
-  color: var(--accent-strong);
-  padding: 6px 10px;
-  font-size: 13px;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.page-link:hover {
-  border-color: var(--accent);
-  background: #f4fbfc;
-}
-
 .workspace {
   display: grid;
   grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
@@ -184,118 +158,6 @@ h2 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(74px, 0.7fr);
   gap: 9px;
-}
-
-.dynkin-card {
-  display: grid;
-  grid-template-columns: 108px minmax(0, 1fr);
-  align-items: center;
-  gap: 10px;
-  border: 1px solid var(--soft-line);
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.68);
-  padding: 10px;
-}
-
-.dynkin-card p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-.pinning-details {
-  border: 1px solid var(--soft-line);
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.68);
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.pinning-details summary {
-  cursor: pointer;
-  color: var(--accent-strong);
-  font-weight: 800;
-  padding: 9px 10px;
-}
-
-.pinning-details p {
-  margin: 0;
-  padding: 0 10px 9px;
-}
-
-.variable-pinning-details {
-  margin-top: 8px;
-  background: #fbfcfc;
-}
-
-.dynkin-diagram {
-  position: relative;
-  width: 94px;
-  height: 76px;
-}
-
-.dynkin-node {
-  position: absolute;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border: 1.5px solid var(--accent-strong);
-  border-radius: 50%;
-  background: #fff;
-  color: var(--accent-strong);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.dynkin-edge {
-  position: absolute;
-  z-index: 1;
-  height: 2px;
-  background: var(--accent-strong);
-  transform-origin: left center;
-}
-
-.d4-diagram .node-1 {
-  left: 4px;
-  top: 38px;
-}
-
-.d4-diagram .node-2 {
-  left: 38px;
-  top: 38px;
-}
-
-.d4-diagram .node-3 {
-  left: 72px;
-  top: 4px;
-}
-
-.d4-diagram .node-4 {
-  left: 72px;
-  top: 38px;
-}
-
-.d4-diagram .edge-12 {
-  left: 28px;
-  top: 50px;
-  width: 12px;
-}
-
-.d4-diagram .edge-23 {
-  left: 58px;
-  top: 43px;
-  width: 38px;
-  transform: rotate(-45deg);
-}
-
-.d4-diagram .edge-24 {
-  left: 62px;
-  top: 50px;
-  width: 12px;
 }
 
 .field {
@@ -389,37 +251,6 @@ h2 {
   padding: 10px 12px;
   font-size: 13px;
   line-height: 1.4;
-}
-
-.debug-box {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
-  gap: 8px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.status-item {
-  display: grid;
-  gap: 2px;
-  border: 1px solid var(--soft-line);
-  border-radius: 7px;
-  background: #fbfcfc;
-  padding: 9px 10px;
-}
-
-.status-item span {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 750;
-  text-transform: uppercase;
-}
-
-.status-item strong {
-  color: var(--ink);
-  font-size: 15px;
-  font-weight: 850;
 }
 
 .output-panel {

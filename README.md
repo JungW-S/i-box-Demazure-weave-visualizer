@@ -6,8 +6,7 @@ paper.
 The page is a static JavaScript app. It does not call Sage or any server-side
 code after the files are served.
 
-The public visualizer has a type `A_n` page and a type `D_4` check page. The
-type `A_n` page implements:
+The public visualizer currently focuses on type `A_n`. It implements:
 
 - compute a reduced expression `\underline{\Delta}` for the longest element
   `w_0` in type `A_n`,
@@ -39,10 +38,10 @@ The Random button uses only the type `A` rank `n` and the length `r`; it
 randomizes the expression sequence `\underline{i}`, the expression sequence
 `\underline{\Delta}`, and the LR sequence.
 
-The type `D_4` check page is available at `d-experiment.html`. It uses the
-standard `SO_8(C)` Chevalley pinning for the coordinate formulas, includes
-branching and arm T-system sanity checks, and keeps type `D_5` and higher as
-future work because they still need a more optimized braid-path step.
+Some experimental simply-laced Dynkin infrastructure is kept in `src/dynkin.mjs`
+and `src/weave.mjs` for possible future type `D/E` development. It is not
+exposed in the current page because the full non-`A` weave construction still
+needs a specialized braid-path algorithm and coordinate formulas.
 
 The Sage prototype and the calculation note in this folder remain references
 for the double inductive weave calculation rules.

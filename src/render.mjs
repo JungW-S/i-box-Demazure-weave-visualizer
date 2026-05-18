@@ -452,7 +452,7 @@ function renderChainQuiver(trace, cycleColors) {
   const header = el("div", "answer-panel-header");
   header.appendChild(el("h3", "", "Quiver"));
   const headerRight = el("div", "answer-panel-actions");
-  headerRight.appendChild(mathText("Q(ℭ) = Q(𝒲_{Δ̲}(ℭ))^op"));
+  headerRight.appendChild(mathText("Q(ℭ) = Q(𝒲_Δ(ℭ))^op"));
   header.appendChild(headerRight);
   section.appendChild(header);
 
@@ -793,51 +793,6 @@ function clusterValuesForDisplay(trace) {
   return (trace.fullClusterValues?.length ? trace.fullClusterValues : trace.bottomWeave.clusterValues) ?? [];
 }
 
-function renderPinningDetails(trace) {
-  const info = trace.bottomWeave.pinningInfo;
-  if (!trace.bottomWeave.coordinateAvailable || !info || info.family === "A") return null;
-
-  const details = el("details", "pinning-details variable-pinning-details");
-  const summary = el("summary");
-  summary.append("Pinning for ");
-  summary.appendChild(formulaSpan("A_t(𝒲_{Δ̲}(ℭ))"));
-  summary.append(`: ${info.group}`);
-  details.appendChild(summary);
-
-  const role = el("p");
-  role.append("This is not part of the input ");
-  role.appendChild(formulaSpan("ℭ"));
-  role.append(". It is the coordinate choice used to write the cluster variables as functions of the top variables.");
-  details.appendChild(role);
-
-  const model = el("p");
-  model.append("Model: standard ");
-  model.append(info.group);
-  model.append(" Chevalley pinning, with basis ");
-  model.appendChild(formulaSpan("e_1,e_2,e_3,e_4,e_{-4},e_{-3},e_{-2},e_{-1}"));
-  model.append(" and the form pairing ");
-  model.appendChild(formulaSpan("e_i"));
-  model.append(" with ");
-  model.appendChild(formulaSpan("e_{-i}"));
-  model.append(".");
-  details.appendChild(model);
-
-  const roots = el("p");
-  roots.append("Simple roots: ");
-  roots.appendChild(formulaSpan("α_1=ε_1-ε_2, α_2=ε_2-ε_3, α_3=ε_3-ε_4, α_4=ε_3+ε_4"));
-  roots.append(".");
-  details.appendChild(roots);
-
-  const rule = el("p");
-  rule.append("We use ");
-  rule.appendChild(formulaSpan("B_i(z)=x_i(z)ṡ_i"));
-  rule.append(" and the framed-weave propagation rules for ");
-  rule.appendChild(formulaSpan("ζ(e)=(z̃_e,u_e)"));
-  rule.append(".");
-  details.appendChild(rule);
-  return details;
-}
-
 function renderClusterVariableAnswerPanel(trace, cycleColors, onSelect = null, onClear = null) {
   const values = clusterValuesForDisplay(trace);
   const formulasAvailable = !trace.fullClusterValuesOmitted;
@@ -847,7 +802,7 @@ function renderClusterVariableAnswerPanel(trace, cycleColors, onSelect = null, o
   const header = el("div", "answer-panel-header");
   header.appendChild(el("h3", "", "Cluster Variables"));
   const headerRight = el("div", "answer-panel-actions");
-  headerRight.appendChild(mathText("A_t(𝒲_{Δ̲}(ℭ))"));
+  headerRight.appendChild(mathText("A_t(𝒲_Δ(ℭ))"));
   if (onClear) {
     const allButton = el("button", "clear-selection-button", "Clear");
     allButton.type = "button";
@@ -867,16 +822,14 @@ function renderClusterVariableAnswerPanel(trace, cycleColors, onSelect = null, o
     note.append(" formulas are omitted; the vertices and quiver remain selectable.");
   } else if (onSelect) {
     note.append("Cluster variables attached to the trivalent vertices of ");
-    note.appendChild(formulaSpan("𝒲_{Δ̲}(ℭ)"));
+    note.appendChild(formulaSpan("𝒲_Δ(ℭ)"));
     note.append(".");
   } else {
     note.append("These are the cluster variables attached to the trivalent vertices of ");
-    note.appendChild(formulaSpan("𝒲_{Δ̲}(ℭ)"));
+    note.appendChild(formulaSpan("𝒲_Δ(ℭ)"));
     note.append(".");
   }
   panel.appendChild(note);
-  const pinningDetails = renderPinningDetails(trace);
-  if (pinningDetails) panel.appendChild(pinningDetails);
 
   if (values.length === 0) {
     panel.appendChild(el("p", "small-note", "No trivalent vertex occurs."));
@@ -1015,7 +968,7 @@ function renderInteractiveWeaveViewer(trace, {
   divider.setAttribute("y2", String(junctionY));
   divider.setAttribute("class", "full-weave-divider");
   svg.appendChild(divider);
-  appendText(svg, 22, junctionY - 6, "i_{Δ̲}(ℭ)", "full-weave-junction-label");
+  appendText(svg, 22, junctionY - 6, "i_Δ(ℭ)", "full-weave-junction-label");
 
   weave.moves.forEach((stripMove, idx) => {
     drawViewerMove(weave, stripMove, idx, bottomBoundaryYs[idx], bottomBoundaryYs[idx + 1]);
@@ -1109,7 +1062,7 @@ function renderInteractiveWeaveViewer(trace, {
     note.append(", a dashed edge for ");
     note.appendChild(formulaSpan("Y_j"));
     note.append(", or a trivalent vertex for ");
-    note.appendChild(formulaSpan("A_t(𝒲_{Δ̲}(ℭ))"));
+    note.appendChild(formulaSpan("A_t(𝒲_Δ(ℭ))"));
     note.append(".");
     info.appendChild(note);
   }
@@ -1147,7 +1100,7 @@ function renderInteractiveWeaveViewer(trace, {
     const values = el("div", "variable-value-list");
     const expression = data.final || topCoordinateExpression(trace, data.bottom);
     values.appendChild(renderValueBlock(
-      `${data.label}(𝒲_{Δ̲}(ℭ))`,
+      `${data.label}(𝒲_Δ(ℭ))`,
       expression ? formulaSpan(expression) : el("span", "cluster-answer-meta", "coordinate formula unavailable"),
     ));
     info.appendChild(values);
@@ -2121,7 +2074,7 @@ function renderQuiverAnswerPanel(weave, cycleColors, onSelect = null, onArrowSel
   const header = el("div", "answer-panel-header");
   header.appendChild(el("h3", "", "Quiver"));
   const headerRight = el("div", "answer-panel-actions");
-  headerRight.appendChild(mathText("Q(𝒲_{Δ̲}(ℭ))"));
+  headerRight.appendChild(mathText("Q(𝒲_Δ(ℭ))"));
   header.appendChild(headerRight);
   panel.appendChild(header);
 
@@ -2132,7 +2085,7 @@ function renderQuiverAnswerPanel(weave, cycleColors, onSelect = null, onArrowSel
   const scroller = el("div", "quiver-scroll");
   scroller.appendChild(renderQuiverSvg(quiver, cycleColors, onSelect, onArrowSelect));
   panel.appendChild(scroller);
-  panel.appendChild(renderExchangeMatrixToggle(quiver, "B(Q(𝒲_{Δ̲}(ℭ)))"));
+  panel.appendChild(renderExchangeMatrixToggle(quiver, "B(Q(𝒲_Δ(ℭ)))"));
   return panel;
 }
 
@@ -2445,9 +2398,9 @@ function renderFullWeave(trace) {
 
   body.append(toolbar, interactiveViewer, resultView);
   return renderCard(
-    "𝒲_{Δ̲}(ℭ)",
+    "𝒲_Δ(ℭ)",
     body,
-    "𝒲_{Δ̲}(ℭ) is the vertical concatenation of 𝒲^T_{Δ̲}(ℭ) and 𝒲^B_{Δ̲}(ℭ) along i_{Δ̲}(ℭ).",
+    "𝒲_Δ(ℭ) is the vertical concatenation of 𝒲^T_Δ(ℭ) and 𝒲^B_Δ(ℭ) along i_Δ(ℭ).",
   );
 }
 
@@ -2497,7 +2450,7 @@ function renderConstructionStepper(root) {
   [
     ["chain", "ℭ"],
     ["string", "s_{Δ̲}(ℭ)"],
-    ["whole", "𝒲_{Δ̲}(ℭ)"],
+    ["whole", "𝒲_Δ(ℭ)"],
   ].forEach(([mode, label], idx) => {
     const button = el("button", "step-button");
     button.type = "button";
