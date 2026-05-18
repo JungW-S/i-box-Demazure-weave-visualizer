@@ -122,7 +122,7 @@ export function randomExample({ family = "A", rank = null, r = null } = {}) {
     rank: String(parsedRank),
     r: String(parsedR),
     u: u.join(" "),
-    rxw: randomHalfTwistWordForDatum(datum).join(" "),
+    rxw: (parsedFamily === "D" ? datum.standardHalfTwistWord : randomHalfTwistWordForDatum(datum)).join(" "),
     c: String(c),
     lr: lr.join(" "),
   };

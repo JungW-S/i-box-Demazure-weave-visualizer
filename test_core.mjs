@@ -219,6 +219,9 @@ assertEqual(randomTrace.u.length, 8, "random example uses the requested length r
 assertEqual(randomTrace.lr.length, 7, "random LR sequence has length r-1");
 assertEqual(randomTrace.c, randomTrace.lr.filter((move) => move === "L").length + 1, "random c is determined by H");
 
+const randomD4Example = randomExample({ family: "D", rank: "4", r: "4" });
+assertEqual(randomD4Example.rxw, standardHalfTwistWord(4, "D").join(" "), "type D random examples use the standard underline Delta for browser stability");
+
 const d4Trace = buildTrace({
   family: "D",
   rank: "4",
