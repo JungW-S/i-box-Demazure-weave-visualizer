@@ -6,8 +6,7 @@ paper.
 The page is a static JavaScript app. It does not call Sage or any server-side
 code after the files are served.
 
-The public visualizer has a type `A_n` page and a type `D_n` page. The
-type `A_n` page implements:
+The public visualizer currently has a type `A_n` page. It implements:
 
 - compute a reduced expression `\underline{\Delta}` for the longest element
   `w_0` in type `A_n`,
@@ -38,14 +37,6 @@ type `A_n` page implements:
 The Random button uses only the Dynkin type rank `n` and the length `r`; it
 randomizes the expression sequence `\underline{i}`, the expression sequence
 `\underline{\Delta}`, and the LR sequence.
-
-The type `D_n` page is available at `d-experiment.html`. It uses the standard
-`SO_{2n}(C)` Chevalley pinning for the coordinate formulas. The input UI is the
-same as the type `A_n` page; the pinning information is shown only from the
-cluster-variable panel of `\mathcal W_{\underline{\Delta}}(\mathfrak C)`.
-At the moment browser rendering is reliable for `D_4` and `D_5`; higher ranks
-compute `\underline{\Delta}` but need a more optimized braid-path step before
-the weave can be rendered in the browser.
 
 The Sage prototype and the calculation note in this folder remain references
 for the double inductive weave calculation rules.
