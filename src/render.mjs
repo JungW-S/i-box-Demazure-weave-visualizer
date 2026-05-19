@@ -1,6 +1,7 @@
 import {
   formatDoubleStringEntry,
   intervalTextForDisplay,
+  makeAdmissibleChain,
 } from "./core.mjs";
 import {
   expandExpressionText,
@@ -211,7 +212,7 @@ function renderValueBlock(label, node) {
   return item;
 }
 
-function renderChainRibbon(trace, { showTitle = true } = {}) {
+function renderChainRibbon(trace, { showTitle = true, onBoxMove = null } = {}) {
   const block = el("div", "chain-ribbon-block");
   if (showTitle) {
     const title = el("div", "chain-ribbon-title");
@@ -221,6 +222,31 @@ function renderChainRibbon(trace, { showTitle = true } = {}) {
   }
 
   const ribbon = el("div", "chain-ribbon");
+  const movesByK = new Map(
+    typeof onBoxMove === "function"
+      ? movableBoxMoves(trace).map((move) => [move.k, move])
+      : [],
+  );
+  function makeMoveButton(move) {
+    const action = el("button", "chain-box-move-action");
+    action.type = "button";
+    action.appendChild(el("span", "chain-box-move-text", `B${move.k}`));
+    action.appendChild(el("span", "chain-box-move-tooltip", boxMoveTooltipText(move)));
+    action.setAttribute("aria-label", `Apply box move B_${move.k}`);
+    action.addEventListener("mouseenter", () => setBoxMoveHighlight(ribbon.closest(".admissible-chain-panel"), move, true));
+    action.addEventListener("mouseleave", () => setBoxMoveHighlight(ribbon.closest(".admissible-chain-panel"), move, false));
+    action.addEventListener("focus", () => setBoxMoveHighlight(ribbon.closest(".admissible-chain-panel"), move, true));
+    action.addEventListener("blur", () => setBoxMoveHighlight(ribbon.closest(".admissible-chain-panel"), move, false));
+    action.addEventListener("click", (event) => {
+      event.stopPropagation();
+      onBoxMove({
+        k: move.k,
+        lr: move.nextLR.slice(),
+        operation: move.sameColor ? "mutation" : "swap",
+      });
+    });
+    return action;
+  }
   trace.chain.rows.forEach((row) => {
     const chip = el("div", row.frozen ? "chain-chip frozen chain-selectable" : "chain-chip chain-selectable");
     chip.dataset.chainT = String(row.t);
@@ -232,7 +258,24 @@ function renderChainRibbon(trace, { showTitle = true } = {}) {
     ribbon.appendChild(chip);
   });
   block.appendChild(ribbon);
+  if (movesByK.size > 0) {
+    const moveStrip = el("div", "chain-box-move-strip");
+    moveStrip.appendChild(el("span", "chain-box-move-label", "Box moves"));
+    const moveActions = el("div", "chain-box-move-actions");
+    Array.from(movesByK.values()).forEach((move) => {
+      moveActions.appendChild(makeMoveButton(move));
+    });
+    moveStrip.appendChild(moveActions);
+    block.appendChild(moveStrip);
+  }
   return block;
+}
+
+function boxMoveTooltipText(move) {
+  const operation = move.sameColor ? `mu_${move.k}` : `sigma_${move.k},${move.k + 1}`;
+  const changed = move.hIndices.map((idx) => `H_${idx}`).join(", ");
+  const reason = move.sameColor ? "same color" : "different colors";
+  return `${operation}: ${reason}; changes ${changed}`;
 }
 
 function lrSideClass(move) {
@@ -260,6 +303,7 @@ function renderChainDataGrid(trace) {
     }
     const move = trace.lr[row.t - 2];
     const cell = el("span", `chain-data-cell lr-cell ${lrSideClass(move)}`, move);
+    cell.dataset.lrIndex = String(row.t - 1);
     cell.title = `𝓗_${row.t - 1}=${move}`;
     lrValues.appendChild(cell);
   });
@@ -297,6 +341,155 @@ function renderSignedWordDetails(trace) {
   });
   details.appendChild(chips);
   return details;
+}
+
+function flipLRMove(move) {
+  return move === "L" ? "R" : "L";
+}
+
+function boxMoveLR(lr, k) {
+  const next = lr.slice();
+  if (k === 1) {
+    next[0] = flipLRMove(next[0]);
+  } else {
+    next[k - 2] = flipLRMove(next[k - 2]);
+    next[k - 1] = flipLRMove(next[k - 1]);
+  }
+  return next;
+}
+
+function boxMoveHIndices(k) {
+  return k === 1 ? [1] : [k - 1, k];
+}
+
+function previewChainRows(trace, nextLR) {
+  try {
+    const nextC = nextLR.filter((move) => move === "L").length + 1;
+    return makeAdmissibleChain({
+      datum: trace.dynkin,
+      u: trace.u,
+      c: nextC,
+      lr: nextLR,
+    }).rows;
+  } catch {
+    return [];
+  }
+}
+
+function boxMoveRowIndices(k) {
+  return k === 1 ? [1] : [k, k + 1];
+}
+
+function localBoxRows(rows, k) {
+  return boxMoveRowIndices(k)
+    .map((t) => rows[t - 1])
+    .filter(Boolean)
+    .map((row) => ({
+      t: row.t,
+      envelope: row.envelope.slice(),
+      box: row.box.slice(),
+      effectiveEnd: row.effectiveEnd,
+    }));
+}
+
+function movableBoxMoves(trace) {
+  const rows = trace.chain.rows;
+  const moves = [];
+  for (let k = 1; k < rows.length; k += 1) {
+    const movable = k === 1 || trace.lr[k - 2] !== trace.lr[k - 1];
+    if (!movable) continue;
+    const sameColor = rows[k - 1].color === rows[k].color;
+    const nextLR = boxMoveLR(trace.lr, k);
+    const previewRows = previewChainRows(trace, nextLR);
+    moves.push({
+      k,
+      sameColor,
+      nextLR,
+      hIndices: boxMoveHIndices(k),
+      leftColor: rows[k - 1].color,
+      rightColor: rows[k].color,
+      currentRows: localBoxRows(rows, k),
+      resultRows: localBoxRows(previewRows, k),
+    });
+  }
+  return moves;
+}
+
+function clearBoxMovePreview(line) {
+  line?.classList.remove("box-move-preview-row");
+  line?.querySelectorAll(".timeline-cell").forEach((cell) => {
+    cell.classList.remove(
+      "box-move-removed-envelope",
+      "box-move-added-envelope",
+    );
+  });
+}
+
+function intervalContains(interval, pos) {
+  return interval && interval[0] <= pos && pos <= interval[1];
+}
+
+function markTimelineBoxDifference(container, currentRow, resultRow) {
+  const t = currentRow?.t ?? resultRow?.t;
+  if (!t) return;
+  const line = container.querySelector(`.timeline-row[data-timeline-t="${t}"]`);
+  if (!line) return;
+  const currentEnvelope = currentRow?.envelope ?? null;
+  const resultEnvelope = resultRow?.envelope ?? null;
+  let hasChange = false;
+  line.querySelectorAll(".timeline-cell").forEach((cell) => {
+    const pos = Number(cell.dataset.timelinePos);
+    const wasInEnvelope = intervalContains(currentEnvelope, pos);
+    const willBeInEnvelope = intervalContains(resultEnvelope, pos);
+    if (wasInEnvelope && !willBeInEnvelope) {
+      cell.classList.add("box-move-removed-envelope");
+      hasChange = true;
+    }
+    if (!wasInEnvelope && willBeInEnvelope) {
+      cell.classList.add("box-move-added-envelope");
+      hasChange = true;
+    }
+  });
+  if (hasChange) line.classList.add("box-move-preview-row");
+}
+
+function rowMapByT(rows) {
+  return new Map((rows ?? []).map((row) => [row.t, row]));
+}
+
+function boxMovePreviewRows(move) {
+  const current = rowMapByT(move.currentRows);
+  const result = rowMapByT(move.resultRows);
+  return Array.from(new Set([...current.keys(), ...result.keys()]))
+    .sort((a, b) => a - b)
+    .map((t) => ({
+      t,
+      current: current.get(t) ?? null,
+      result: result.get(t) ?? null,
+    }));
+}
+
+function clearBoxMovePreviewRows(container, move) {
+  boxMovePreviewRows(move).forEach(({ t }) => {
+    clearBoxMovePreview(container.querySelector(`.timeline-row[data-timeline-t="${t}"]`));
+  });
+}
+
+function markBoxMovePreviewRows(container, move) {
+  boxMovePreviewRows(move).forEach(({ current, result }) => {
+    markTimelineBoxDifference(container, current, result);
+  });
+}
+
+function setBoxMoveHighlight(container, move, active) {
+  if (!container) return;
+  move.hIndices.forEach((idx) => {
+    const cell = container.querySelector(`.lr-cell[data-lr-index="${idx}"]`);
+    if (cell) cell.classList.toggle("box-move-highlight", active);
+  });
+  clearBoxMovePreviewRows(container, move);
+  if (!active) return;
+  markBoxMovePreviewRows(container, move);
 }
 
 function intervalTextOrEmpty(interval) {
@@ -364,9 +557,6 @@ function renderAdmissibleChainPanel(trace, pyramidBlock, chainBlock) {
   const panel = el("div", "answer-panel admissible-chain-panel");
   const header = el("div", "answer-panel-header");
   header.appendChild(el("h3", "", "Admissible Chain"));
-  const headerRight = el("div", "answer-panel-actions");
-  headerRight.appendChild(mathText("ℭ = (𝔠_1,...,𝔠_r)"));
-  header.appendChild(headerRight);
   panel.appendChild(header);
 
   const note = el("p", "small-note chain-panel-note");
@@ -384,7 +574,7 @@ function renderAdmissibleChainPanel(trace, pyramidBlock, chainBlock) {
   return panel;
 }
 
-function renderTimeline(trace, cycleColors) {
+function renderTimeline(trace, cycleColors, options = {}) {
   const wrap = el("div", "timeline");
   wrap.style.setProperty("--timeline-cols", String(trace.u.length));
   const header = el("div", "timeline-row timeline-header");
@@ -399,6 +589,7 @@ function renderTimeline(trace, cycleColors) {
   trace.chain.rows.forEach((row) => {
     const line = el("div", "timeline-row chain-selectable");
     line.dataset.chainT = String(row.t);
+    line.dataset.timelineT = String(row.t);
     line.setAttribute("role", "button");
     line.setAttribute("tabindex", "0");
     line.appendChild(el("div", "timeline-label", `t=${row.t}`));
@@ -408,6 +599,7 @@ function renderTimeline(trace, cycleColors) {
       if (row.box[0] <= pos && pos <= row.box[1]) classes.push("in-box");
       if (pos === row.effectiveEnd) classes.push("effective");
       const cell = el("div", classes.join(" "), String(trace.u[pos - 1]));
+      cell.dataset.timelinePos = String(pos);
       cell.title = `position ${pos}`;
       line.appendChild(cell);
     }
@@ -429,7 +621,7 @@ function renderTimeline(trace, cycleColors) {
   chainHeader.appendChild(el("span", "chain-section-title", "i-boxes in ℭ"));
   chainHeader.appendChild(renderLegend([["legend-box frozen", "frozen"]], "legend compact-legend"));
   chainBlock.appendChild(chainHeader);
-  chainBlock.appendChild(renderChainRibbon(trace, { showTitle: false }));
+  chainBlock.appendChild(renderChainRibbon(trace, { showTitle: false, onBoxMove: options.onBoxMove }));
   chainBlock.appendChild(renderSignedWordDetails(trace));
 
   const body = el("div", "chain-visual-block");
@@ -509,7 +701,7 @@ function renderChainQuiver(trace, cycleColors, onSelect = null) {
   const header = el("div", "answer-panel-header");
   header.appendChild(el("h3", "", "Quiver"));
   const headerRight = el("div", "answer-panel-actions");
-  headerRight.appendChild(mathText("Q(ℭ) = Q(𝒲_{Δ̲}(ℭ))^op"));
+  headerRight.appendChild(mathText("Q(ℭ)"));
   header.appendChild(headerRight);
   section.appendChild(header);
 
@@ -2230,6 +2422,7 @@ function renderExchangeMatrixToggle(quiver, label) {
     const open = panel.classList.toggle("hidden") === false;
     button.classList.toggle("active", open);
     button.setAttribute("aria-expanded", String(open));
+    block.closest(".quiver-answer-panel")?.classList.toggle("matrix-open", open);
   });
   block.append(button, panel);
   return block;
@@ -2618,7 +2811,7 @@ function renderBottomWeaveSvg(weave, compact = false, options = {}) {
 }
 
 function renderFullWeave(trace) {
-  const body = el("div", "weave-block");
+  const body = el("div", "weave-block whole-mode-view whole-result-view");
   const cycleColors = new Map(trace.bottomWeave.lusztigCycles.map((cycle, idx) => [cycle.label, cycleColor(idx)]));
   const clusterValues = clusterValuesForDisplay(trace);
   const clusterLabels = new Set(clusterValues.map((value) => value.label));
@@ -2692,7 +2885,7 @@ function renderFullWeave(trace) {
   });
   interactiveViewer.classList.add("main-interactive-weave");
 
-  const resultView = el("div", "whole-mode-view whole-result-view");
+  const resultView = body;
 
   function syncWholeUrl() {
     if (!window.history?.replaceState) return;
@@ -2771,13 +2964,13 @@ function renderFullWeave(trace) {
     syncClusterSelection();
     syncWholeUrl();
   }
-  resultView.append(
-    renderQuiverAnswerPanel(trace.bottomWeave, cycleColors, selectClusterFromQuiver, selectQuiverArrow),
-    renderClusterVariableAnswerPanel(trace, cycleColors, selectClusterFromList, clearClusterSelection),
-  );
-  syncClusterSelection();
+  const quiverPanel = renderQuiverAnswerPanel(trace.bottomWeave, cycleColors, selectClusterFromQuiver, selectQuiverArrow);
+  const clusterPanel = renderClusterVariableAnswerPanel(trace, cycleColors, selectClusterFromList, clearClusterSelection);
 
-  body.append(toolbar, interactiveViewer, resultView);
+  const weaveStage = el("div", "weave-stage-panel");
+  weaveStage.append(toolbar, interactiveViewer);
+  body.append(weaveStage, quiverPanel, clusterPanel);
+  syncClusterSelection();
   return renderCard(
     "𝒲_{Δ̲}(ℭ)",
     body,
@@ -2787,18 +2980,18 @@ function renderFullWeave(trace) {
 
 function renderConstructionStepper(root) {
   const controls = el("div", "construction-stepper");
-  const activeClasses = ["step-active-whole", "step-active-chain", "step-active-string"];
-  const validModes = new Set(["chain", "string", "whole"]);
+  const activeClasses = ["step-active-whole", "step-active-chain", "step-active-string", "step-active-compare"];
+  const validModes = new Set(["chain", "string", "whole", "compare"]);
   const buttons = new Map();
   const scrollByMode = new Map();
-  let activeMode = "whole";
+  let activeMode = "chain";
   function stepFromUrl() {
     try {
       const params = new URLSearchParams(window.location.search);
       const mode = params.get("view") ?? params.get("step");
-      return validModes.has(mode) ? mode : "whole";
+      return validModes.has(mode) ? mode : "chain";
     } catch {
-      return "whole";
+      return "chain";
     }
   }
   function syncUrl(mode) {
@@ -2817,6 +3010,30 @@ function renderConstructionStepper(root) {
     const y = scrollByMode.has(mode) ? scrollByMode.get(mode) : defaultStepScrollY();
     requestAnimationFrame(() => window.scrollTo({ top: y, left: window.scrollX, behavior: "auto" }));
   }
+  function syncCompareItemSizes() {
+    const rows = Array.from(root.querySelectorAll(".step-chain .determinantial-row[data-chain-t]"));
+    rows.forEach((row) => {
+      row.style.height = "";
+      const cluster = root.querySelector(`.step-whole .cluster-answer-item[data-cluster="A${row.dataset.chainT}"]`);
+      if (cluster) cluster.style.height = "";
+    });
+    if (!root.classList.contains("step-active-compare")) return;
+    requestAnimationFrame(() => {
+      if (!root.classList.contains("step-active-compare")) return;
+      rows.forEach((row) => {
+        const cluster = root.querySelector(`.step-whole .cluster-answer-item[data-cluster="A${row.dataset.chainT}"]`);
+        if (!cluster) return;
+        row.style.height = "";
+        cluster.style.height = "";
+        const height = Math.ceil(Math.max(
+          row.getBoundingClientRect().height,
+          cluster.getBoundingClientRect().height,
+        ));
+        row.style.height = `${height}px`;
+        cluster.style.height = `${height}px`;
+      });
+    });
+  }
   function activateStep(mode, { updateUrl = true, saveScroll = true, restoreStepScroll = true } = {}) {
     if (saveScroll && activeMode !== mode) scrollByMode.set(activeMode, currentScrollY());
     root.classList.remove(...activeClasses);
@@ -2827,7 +3044,9 @@ function renderConstructionStepper(root) {
     activeMode = mode;
     if (updateUrl) syncUrl(mode);
     if (restoreStepScroll) restoreScroll(mode);
+    syncCompareItemSizes();
   }
+  const stepSequence = el("div", "step-sequence");
   [
     ["chain", "ℭ"],
     ["string", "s_{Δ̲}(ℭ)"],
@@ -2839,24 +3058,36 @@ function renderConstructionStepper(root) {
     button.dataset.step = mode;
     button.addEventListener("click", () => activateStep(mode));
     buttons.set(mode, button);
-    controls.appendChild(button);
-    if (idx < 2) controls.appendChild(el("span", "step-arrow", "→"));
+    stepSequence.appendChild(button);
+    if (idx < 2) stepSequence.appendChild(el("span", "step-arrow", "→"));
   });
+  const viewTools = el("div", "step-view-tools");
+  const compareButton = el("button", "step-button compare-step-button");
+  compareButton.type = "button";
+  compareButton.textContent = "Compare";
+  compareButton.dataset.step = "compare";
+  compareButton.addEventListener("click", () => activateStep("compare"));
+  buttons.set("compare", compareButton);
+  viewTools.appendChild(compareButton);
+  controls.appendChild(viewTools);
+  controls.appendChild(stepSequence);
   controls.activateStep = activateStep;
+  controls.syncCompareItemSizes = syncCompareItemSizes;
   activeMode = stepFromUrl();
   activateStep(activeMode, { updateUrl: false, saveScroll: false, restoreStepScroll: false });
   return controls;
 }
 
-export function renderTrace(trace, container) {
-  const root = el("div", "trace-view step-active-whole");
+export function renderTrace(trace, container, options = {}) {
+  const root = el("div", "trace-view step-active-chain");
   const cycleColors = new Map(trace.bottomWeave.lusztigCycles.map((cycle, idx) => [cycle.label, cycleColor(idx)]));
   const controls = renderConstructionStepper(root);
   root.append(
     controls,
     markStepSection(renderFullWeave(trace), ["whole"]),
-    markStepSection(renderTimeline(trace, cycleColors), ["chain"]),
+    markStepSection(renderTimeline(trace, cycleColors, options), ["chain"]),
     markStepSection(renderDoubleString(trace), ["string"]),
   );
   container.replaceChildren(root);
+  controls.syncCompareItemSizes?.();
 }

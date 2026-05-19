@@ -4,7 +4,7 @@ import {
   randomExample,
   standardHalfTwistWord,
 } from "./core.mjs";
-import { renderTrace } from "./render.mjs?v=20260519-quiver-sync";
+import { renderTrace } from "./render.mjs?v=20260520-view-default";
 
 const form = document.querySelector("#input-form");
 const rankInput = document.querySelector("#rank-input");
@@ -105,13 +105,18 @@ function clearError() {
   errorBox.hidden = true;
 }
 
+function applyBoxMove(move) {
+  lrInput.value = move.lr.join(" ");
+  runConstruction();
+}
+
 function runConstruction(options = {}) {
   try {
     clearError();
     const trace = buildTrace(readInput());
     rInput.value = String(trace.u.length);
     if (!options.preserveDetail) clearDetailUrl();
-    renderTrace(trace, output);
+    renderTrace(trace, output, { onBoxMove: applyBoxMove });
     if (options.syncUrl !== false) syncInputUrl(trace, options);
   } catch (error) {
     setError(error.message);

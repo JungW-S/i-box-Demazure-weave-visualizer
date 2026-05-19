@@ -3,7 +3,7 @@ import {
   randomExample,
   standardHalfTwistWord,
 } from "./core.mjs";
-import { renderTrace } from "./render.mjs?v=20260519-quiver-sync";
+import { renderTrace } from "./render.mjs?v=20260520-view-default";
 
 const form = document.querySelector("#input-form");
 const rankInput = document.querySelector("#rank-input");
