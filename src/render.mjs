@@ -1358,7 +1358,7 @@ function renderClusterVariableAnswerPanel(trace, cycleColors, onSelect = null, o
   const header = el("div", "answer-panel-header");
   header.appendChild(el("h3", "", "Cluster Variables"));
   const headerRight = el("div", "answer-panel-actions");
-  headerRight.appendChild(mathText("A_t(𝒲_{Δ̲}(ℭ))"));
+  headerRight.appendChild(mathText("A_t = A_t(𝒲_{Δ̲}(ℭ))"));
   if (onClear) {
     const allButton = el("button", "clear-selection-button", "Clear");
     allButton.type = "button";
@@ -1414,7 +1414,9 @@ function renderClusterVariableAnswerPanel(trace, cycleColors, onSelect = null, o
         }
       });
     }
-    item.appendChild(formulaSpan(clusterVariableText(value.label), "cluster-answer-label formula"));
+    const label = el("span", "cluster-answer-label");
+    label.appendChild(formulaSpan(clusterVariableText(value.label), "formula"));
+    item.appendChild(label);
     const content = el("div", "cluster-answer-content");
     if (formulasAvailable) {
       content.appendChild(formulaSpan(value.expression, "cluster-answer-expression formula"));

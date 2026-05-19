@@ -2407,6 +2407,9 @@ h2 {
 .cluster-answer-label {
   display: inline-grid;
   place-items: center;
+  align-self: center;
+  justify-self: stretch;
+  width: 100%;
   min-height: 26px;
   border: 1px solid var(--cycle-color);
   border-radius: 4px;

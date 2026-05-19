@@ -4,7 +4,7 @@ import {
   randomExample,
   standardHalfTwistWord,
 } from "./core.mjs";
-import { renderTrace } from "./render.mjs?v=20260520-view-default";
+import { renderTrace } from "./render.mjs?v=20260520-label-fix";
 
 const form = document.querySelector("#input-form");
 const rankInput = document.querySelector("#rank-input");
