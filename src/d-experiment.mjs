@@ -19,9 +19,9 @@ const defaultDExample = {
   family: "D",
   rank: "4",
   r: "5",
-  u: "2 1 3 4 2",
+  u: "4 2 1 2 4",
   rxw: standardHalfTwistWord(4, "D").join(" "),
-  lr: "R R R R",
+  lr: "L R L R",
 };
 
 function readInput() {
