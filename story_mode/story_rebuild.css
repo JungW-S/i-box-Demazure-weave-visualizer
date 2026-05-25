@@ -1,0 +1,1276 @@
+.story-rebuild-shell {
+  max-width: none;
+}
+
+.guided-story-page .story-rebuild-shell {
+  width: 100%;
+  padding: 0;
+}
+
+.guided-story-page .story-rebuild-header,
+.guided-story-page .rebuild-input-wrap {
+  display: none;
+}
+
+.guided-story-page .story-film {
+  border-top: 0;
+}
+
+html,
+body {
+  scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+.story-rebuild-header {
+  max-width: 1480px;
+  margin: 0 auto;
+}
+
+.rebuild-input-wrap {
+  max-width: 1480px;
+  margin: 0 auto 28px;
+}
+
+.rebuild-input-wrap .input-panel {
+  width: 100%;
+}
+
+.story-film {
+  position: relative;
+  min-height: 1760vh;
+  border-top: 1px solid rgba(121, 136, 146, 0.24);
+}
+
+.story-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.story-stage {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  background: #f8fafb;
+}
+
+.story-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(17, 24, 39, 0.03) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(17, 24, 39, 0.03) 1px, transparent 1px);
+  background-size: 96px 96px;
+  opacity: 0.36;
+  pointer-events: none;
+}
+
+#story-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.story-play-button {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(17, 24, 39, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #111827;
+  font: 760 15px/1 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  box-shadow: 0 12px 28px rgba(17, 24, 39, 0.11);
+  cursor: pointer;
+}
+
+.story-play-button:hover {
+  background: #ffffff;
+  border-color: rgba(31, 95, 191, 0.35);
+}
+
+.story-play-button:focus-visible {
+  outline: 3px solid rgba(31, 95, 191, 0.25);
+  outline-offset: 3px;
+}
+
+.story-play-icon {
+  display: inline-block;
+  min-width: 12px;
+  color: #1f5fbf;
+  font-size: 13px;
+  line-height: 1;
+  text-align: center;
+}
+
+.story-caption {
+  position: absolute;
+  left: 50%;
+  bottom: 36px;
+  z-index: 2;
+  width: min(1120px, calc(100vw - 128px));
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border: 1px solid rgba(17, 24, 39, 0.10);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #111827;
+  box-shadow: 0 16px 38px rgba(17, 24, 39, 0.10);
+  font: 740 20px/1.34 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  text-align: center;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.story-caption:empty {
+  display: none;
+}
+
+.story-caption.is-final {
+  top: 72px;
+  bottom: auto;
+}
+
+.story-progress {
+  display: none;
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  bottom: 28px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.16);
+  overflow: hidden;
+}
+
+.story-progress span {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: #0d7483;
+}
+
+.story-capture .story-rebuild-header,
+.story-capture .rebuild-input-wrap {
+  display: none;
+}
+
+.story-capture .story-film {
+  min-height: 100vh;
+  border-top: 0;
+}
+
+.story-capture .story-sticky {
+  position: relative;
+}
+
+.story-bg {
+  fill: transparent;
+}
+
+.story-layer {
+  transition: opacity 70ms linear;
+}
+
+.story-text,
+.story-intro-text,
+.story-opening-caption,
+.story-role-label,
+.story-formula-label,
+.story-main-label,
+.story-object-caption,
+.story-object-symbol,
+.story-object-delta text,
+.step2-label,
+.symbol-token text,
+.sdelta-r-tag text,
+.sdelta-side-tag text,
+.sdelta-star-tag text,
+.lr-token text,
+.row-letter text,
+.row-interval,
+.row-color,
+.count-label,
+.c-marker text {
+  fill: #111827;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+}
+
+.story-intro-text {
+  font-size: 26px;
+  font-weight: 740;
+}
+
+.story-opening-caption {
+  fill: #111827;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 25px;
+  font-weight: 760;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.story-chain-intro-text {
+  fill: #111827;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 21px;
+  font-weight: 720;
+  dominant-baseline: middle;
+}
+
+.story-chain-intro-subtext {
+  fill: #52616c;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 17px;
+  font-weight: 720;
+  dominant-baseline: middle;
+}
+
+.story-chain-intro-math {
+  fill: #111827;
+  font-family: "STIX Two Math", "Cambria Math", "Noto Sans Math", "Apple Symbols", Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 720;
+  dominant-baseline: middle;
+}
+
+.story-chain-intro-source {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 24px;
+  font-weight: 780;
+}
+
+.story-chain-intro-arrow {
+  fill: #1f5fbf;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 34px;
+  font-weight: 760;
+  dominant-baseline: middle;
+  text-anchor: middle;
+}
+
+.story-object-caption {
+  fill: #52616c;
+  font-size: 16px;
+  font-weight: 720;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.story-object-symbol {
+  fill: #111827;
+  font-size: 34px;
+  font-weight: 880;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.story-object-delta {
+  fill: #111827;
+}
+
+.story-object-delta .underlined-delta-symbol,
+.story-object-delta .underlined-delta-equals {
+  font-family: "STIX Two Math", "Cambria Math", "Noto Sans Math", "Apple Symbols", Georgia, "Times New Roman", serif;
+  font-size: 36px;
+  font-weight: 880;
+}
+
+.story-object-delta .underlined-delta-subscript {
+  fill: #111827;
+  font-family: "STIX Two Math", "Cambria Math", "Noto Sans Math", "Apple Symbols", Georgia, "Times New Roman", serif;
+  font-size: 18px;
+  font-weight: 760;
+}
+
+.story-object-delta .underlined-delta-rule {
+  stroke: #111827;
+  stroke-width: 1.9;
+}
+
+.story-role-label {
+  fill: #52616c;
+  font-size: 17px;
+  font-weight: 730;
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.story-main-label {
+  font-family: "STIX Two Math", "Cambria Math", "Noto Sans Math", "Apple Symbols", Georgia, "Times New Roman", serif;
+  font-size: 28px;
+  font-weight: 820;
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+
+.story-frakh-label {
+  font-family: "Cambria Math", "STIX Two Math", "Noto Sans Math", "Apple Symbols", Georgia, "Times New Roman", serif;
+  font-size: 26px;
+  font-weight: 560;
+  opacity: 0.94;
+}
+
+.story-lr-label {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 27px;
+  font-weight: 860;
+  opacity: 0.96;
+}
+
+.story-c-group-brace {
+  fill: #111827;
+  font-family: "STIX Two Math", "Cambria Math", "Noto Sans Math", "Apple Symbols", Georgia, "Times New Roman", serif;
+  font-size: 94px;
+  font-weight: 560;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.underlined-delta-label {
+  fill: #111827;
+}
+
+.underlined-delta-symbol,
+.underlined-delta-equals {
+  font-size: 28px;
+  font-weight: 850;
+  dominant-baseline: middle;
+}
+
+.underlined-delta-rule,
+.step2-subscript-rule,
+.idelta-label-subscript-rule,
+.idelta-bracket-delta-rule {
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.step2-label {
+  fill: #111827;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.step2-subscript {
+  font-size: 19px;
+  font-weight: 820;
+  fill: #111827;
+  dominant-baseline: middle;
+}
+
+.step2-subscript-rule {
+  stroke: #111827;
+  stroke-width: 1.7;
+}
+
+.symbol-token text {
+  font-size: 26px;
+  font-weight: 820;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.idelta-delta-token text,
+.idelta-entry-token text {
+  fill: var(--strand-color, #1f5fbf);
+  font-weight: 900;
+}
+
+.i-token text {
+  fill: #111827;
+}
+
+.delta-token text {
+  fill: #1f5fbf;
+  font-size: 24px;
+}
+
+.sdelta-r-tag text {
+  fill: #087845;
+  font-size: 17px;
+  font-weight: 900;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.sdelta-chain-token text {
+  fill: #1f5fbf;
+  font-size: 24px;
+  font-weight: 900;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.append-carrier text {
+  fill: #111827;
+  font-size: 15px;
+  font-weight: 880;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.append-carrier-dot {
+  stroke-width: 1.7;
+}
+
+.append-guide-path {
+  fill: none;
+  stroke: rgba(31, 95, 191, 0.22);
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.append-guide-path.side-l {
+  stroke: rgba(184, 107, 0, 0.26);
+}
+
+.append-guide-path.side-r {
+  stroke: rgba(8, 120, 69, 0.22);
+}
+
+.append-carrier.is-focus .append-carrier-dot {
+  stroke-width: 2.4;
+  filter: drop-shadow(0 0 12px rgba(31, 95, 191, 0.22));
+}
+
+.append-carrier.is-transforming .append-carrier-dot {
+  stroke-width: 2.7;
+}
+
+.append-carrier.is-moving .append-carrier-dot {
+  stroke-width: 2.8;
+  filter: drop-shadow(0 0 14px rgba(31, 95, 191, 0.25));
+}
+
+.append-carrier.is-moving text {
+  font-weight: 960;
+  paint-order: stroke;
+  stroke: rgba(248, 250, 251, 0.96);
+  stroke-width: 3px;
+}
+
+.chain-row.is-append-source .ibox-range-outline {
+  stroke-width: 2.4;
+  filter: drop-shadow(0 0 8px rgba(194, 118, 22, 0.22));
+}
+
+.chain-row.is-append-source .row-interval {
+  fill: #111827;
+  font-weight: 920;
+}
+
+.row-color-dot.is-append-source {
+  stroke-width: 2.8;
+  filter: drop-shadow(0 0 10px rgba(31, 95, 191, 0.24));
+}
+
+.row-color.is-append-source {
+  font-weight: 960;
+  paint-order: stroke;
+  stroke: rgba(248, 250, 251, 0.96);
+  stroke-width: 3px;
+}
+
+.lr-token.is-append-source text,
+.c-marker.is-append-source text {
+  font-weight: 960;
+  paint-order: stroke;
+  stroke: rgba(248, 250, 251, 0.96);
+  stroke-width: 4px;
+  filter: drop-shadow(0 0 10px rgba(31, 95, 191, 0.22));
+}
+
+.append-carrier.is-idelta-source .append-carrier-dot {
+  stroke-width: 2.8;
+  filter: drop-shadow(0 0 13px rgba(31, 95, 191, 0.28));
+}
+
+.append-carrier.is-idelta-source text {
+  font-weight: 960;
+}
+
+.sdelta-side-tag text {
+  font-size: 17px;
+  font-weight: 900;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.sdelta-side-tag.side-l text {
+  fill: #b86b00;
+}
+
+.sdelta-side-tag.side-r text {
+  fill: #087845;
+}
+
+.sdelta-side-tag.is-idelta-focus text {
+  font-size: 22px;
+  font-weight: 960;
+  paint-order: stroke;
+  stroke: rgba(248, 250, 251, 0.95);
+  stroke-width: 3px;
+  filter: drop-shadow(0 0 14px rgba(31, 95, 191, 0.32));
+}
+
+.sdelta-star-tag text {
+  fill: #b86b00;
+  font-size: 34px;
+  font-weight: 950;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: rgba(248, 250, 251, 0.96);
+  stroke-width: 4px;
+  filter: drop-shadow(0 0 10px rgba(184, 107, 0, 0.34));
+}
+
+.idelta-delta-token text {
+  fill: var(--strand-color, #1f5fbf);
+  font-size: 25px;
+  font-weight: 910;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.idelta-entry-token text {
+  fill: var(--strand-color, #1f5fbf);
+  font-size: 25px;
+  font-weight: 910;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: rgba(248, 250, 251, 0.96);
+  stroke-width: 3px;
+}
+
+.idelta-target-marker {
+  fill: rgba(31, 95, 191, 0.08);
+  stroke: rgba(31, 95, 191, 0.84);
+  stroke-width: 2.6;
+}
+
+.idelta-target-marker.side-l {
+  stroke: rgba(184, 107, 0, 0.88);
+  fill: rgba(184, 107, 0, 0.08);
+}
+
+.idelta-target-marker.side-r {
+  stroke: rgba(8, 120, 69, 0.88);
+  fill: rgba(8, 120, 69, 0.08);
+}
+
+.idelta-guide-path {
+  fill: none;
+  stroke: rgba(31, 95, 191, 0.48);
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.idelta-guide-path.side-l {
+  stroke: rgba(184, 107, 0, 0.56);
+}
+
+.idelta-guide-path.side-r {
+  stroke: rgba(8, 120, 69, 0.54);
+}
+
+.idelta-label {
+  fill: #111827;
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  font-size: 23px;
+  font-weight: 860;
+}
+
+.idelta-label-subscript {
+  font-size: 15px;
+  font-weight: 820;
+  fill: #111827;
+  dominant-baseline: middle;
+}
+
+.idelta-label-subscript-rule {
+  stroke: #111827;
+  stroke-width: 1.45;
+}
+
+.idelta-bracket path {
+  fill: none;
+  stroke: rgba(31, 95, 191, 0.74);
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.idelta-bracket text,
+.idelta-bracket-delta {
+  fill: #1f5fbf;
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 850;
+  text-anchor: middle;
+}
+
+.idelta-bracket-delta {
+  dominant-baseline: middle;
+}
+
+.idelta-bracket-delta-rule {
+  stroke: #1f5fbf;
+  stroke-width: 1.7;
+}
+
+.step3-strand {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.step3-strand.is-active {
+  stroke-width: 6;
+  filter: drop-shadow(0 0 11px rgba(31, 95, 191, 0.34));
+}
+
+.step3-trivalent-strand {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 10px rgba(31, 95, 191, 0.18));
+}
+
+.step3-trivalent-dot {
+  fill: #1f5fbf;
+  stroke: rgba(248, 250, 251, 0.96);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 10px rgba(31, 95, 191, 0.30));
+}
+
+.step3-strip {
+  transition: opacity 70ms linear;
+}
+
+.step3-strip-strand {
+  fill: none;
+  stroke-width: 4.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 1;
+  filter: none;
+}
+
+.step3-source-overlay {
+  pointer-events: none;
+}
+
+.step3-source-overlay-path {
+  display: none;
+  fill: none;
+  stroke-width: 7.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  filter: none;
+}
+
+.step3-top-extension {
+  fill: none;
+  stroke-width: 4.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 1;
+  filter: none;
+  pointer-events: none;
+}
+
+.step3-top-extension.is-current-source {
+  stroke-width: 4.8;
+  filter: none;
+}
+
+.step3-strip-strand.passive-move {
+  opacity: 1;
+}
+
+.step3-strip.is-current .step3-strip-strand {
+  opacity: 1;
+  stroke-width: 4.8;
+  filter: none;
+}
+
+.step3-strip.is-current .step3-strip-strand.active-move {
+  opacity: 1;
+  stroke-width: 4.8;
+  filter: none;
+}
+
+.step3-strip.is-source-chain .step3-strip-strand.source-carry {
+  opacity: 1;
+  stroke-width: 4.8;
+  filter: none;
+}
+
+.step3-strip.is-current .step3-strip-strand.target-descent {
+  opacity: 1;
+  stroke-width: 4.8;
+  filter: none;
+}
+
+.step3-operation-guide {
+  fill: none;
+  stroke: rgba(15, 107, 122, 0.48);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  pointer-events: none;
+}
+
+.step3-first-merge {
+  pointer-events: none;
+}
+
+.step3-background-strand {
+  fill: none;
+  stroke-width: 4.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 1;
+  filter: none;
+}
+
+.step3-merge-strand {
+  fill: none;
+  stroke-width: 4.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 1;
+  filter: none;
+}
+
+.step3-merge-strand.active {
+  stroke-width: 7.2;
+  filter: drop-shadow(0 0 14px rgba(31, 95, 191, 0.32));
+}
+
+.step3-merge-strand.partner {
+  stroke-width: 4.8;
+  opacity: 1;
+}
+
+.step3-merge-strand.output {
+  stroke-width: 4.8;
+}
+
+.step3-word-halo {
+  fill: rgba(31, 95, 191, 0.10);
+  stroke: rgba(31, 95, 191, 0.72);
+  stroke-width: 2.4;
+  filter: drop-shadow(0 0 12px rgba(31, 95, 191, 0.22));
+}
+
+.step3-strip-move-dot {
+  fill: #ffffff;
+  stroke: #111827;
+  stroke-width: 1.5;
+}
+
+.step3-strip-tri-dot {
+  fill: #111827;
+  stroke: rgba(248, 250, 251, 0.96);
+  stroke-width: 2.5;
+  filter: none;
+}
+
+.step3-strip.is-active-tri .step3-strip-tri-dot {
+  fill: #111827;
+  stroke: rgba(248, 250, 251, 0.96);
+  stroke-width: 2.5;
+  filter: none;
+}
+
+.step3-strip.is-completed-tri .step3-strip-tri-dot {
+  filter: none;
+}
+
+.step3-tri-hold-ring {
+  fill: rgba(31, 95, 191, 0.06);
+  stroke: rgba(31, 95, 191, 0.50);
+  stroke-width: 2.2;
+  stroke-dasharray: 3 4;
+  filter: drop-shadow(0 0 10px rgba(31, 95, 191, 0.18));
+}
+
+.step3-vertex-badge {
+  pointer-events: none;
+}
+
+.step3-vertex-badge rect {
+  fill: #ffffff;
+  stroke: #1f5fbf;
+  stroke-width: 1.7;
+  filter: none;
+}
+
+.step3-vertex-badge text {
+  fill: #111827;
+  font-size: 13px;
+  font-weight: 920;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.step4-boundary {
+  pointer-events: none;
+}
+
+.step4-boundary-label,
+.step4-boundary-label text,
+.step4-boundary-token text {
+  fill: #111827;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+}
+
+.step4-boundary-label {
+  font-size: 23px;
+  font-weight: 880;
+}
+
+.step4-boundary-label .underlined-delta-symbol {
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  font-size: 24px;
+  font-weight: 850;
+}
+
+.step4-boundary-label .underlined-delta-rule {
+  stroke: #111827;
+  stroke-width: 1.6;
+}
+
+.step4-boundary-token text {
+  font-size: 27px;
+  font-weight: 920;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: rgba(248, 250, 251, 0.96);
+  stroke-width: 3px;
+}
+
+.step4-top-weave,
+.step4-top-strip {
+  pointer-events: none;
+}
+
+.step4-top-strand {
+  fill: none;
+  stroke-width: 4.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 1;
+  filter: none;
+}
+
+.step4-top-strand.active {
+  stroke-width: 4.6;
+}
+
+.step4-top-dot {
+  fill: #ffffff;
+  stroke: #111827;
+  stroke-width: 1.4;
+}
+
+.step4-debug-anchors {
+  pointer-events: none;
+}
+
+.step4-debug-target-anchor {
+  fill: rgba(245, 158, 11, 0.16);
+  stroke: #d97706;
+  stroke-width: 2.2;
+}
+
+.step4-debug-bottom-anchor {
+  stroke: #0d7483;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.step4-debug-index,
+.step4-debug-status {
+  fill: #334155;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 850;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(248, 250, 251, 0.96);
+  stroke-width: 3px;
+}
+
+.step4-debug-status {
+  text-anchor: start;
+  font-size: 14px;
+}
+
+.step4-debug-status.is-error {
+  fill: #9d1c1c;
+}
+
+.step4-weave-label {
+  pointer-events: none;
+}
+
+.step4-text-label {
+  pointer-events: none;
+}
+
+.step4-text-label text {
+  fill: #111827;
+  font-size: 20px;
+  font-weight: 720;
+  letter-spacing: 0;
+  text-anchor: end;
+}
+
+.step4-weave-bracket {
+  pointer-events: none;
+}
+
+.step4-weave-bracket path {
+  fill: none;
+  stroke: #111827;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.step4-weave-label text {
+  fill: #111827;
+  font-family: "STIX Two Math", "Cambria Math", "Noto Sans Math", "Apple Symbols", Georgia, "Times New Roman", serif;
+}
+
+.step4-weave-symbol {
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 520;
+  stroke: none;
+}
+
+.step4-weave-sup {
+  font-size: 15px;
+  font-weight: 720;
+}
+
+.step4-weave-sub {
+  font-size: 15px;
+  font-weight: 720;
+  text-anchor: middle;
+}
+
+.step4-weave-sub-rule {
+  stroke: #111827;
+  stroke-width: 1.4;
+}
+
+.step4-weave-arg {
+  font-size: 23px;
+  font-weight: 720;
+}
+
+.append-carrier.is-step3-current .append-carrier-dot {
+  stroke-width: 3.4;
+  filter: drop-shadow(0 0 13px rgba(31, 95, 191, 0.32));
+}
+
+.append-carrier.is-step3-current text,
+.sdelta-side-tag.is-step3-current text {
+  font-weight: 980;
+  paint-order: stroke;
+  stroke: rgba(248, 250, 251, 0.96);
+  stroke-width: 3px;
+}
+
+.source-focus-ring {
+  fill: rgba(31, 95, 191, 0.10);
+  stroke: rgba(31, 95, 191, 0.74);
+  stroke-width: 2.2;
+  opacity: 0;
+  filter: drop-shadow(0 0 10px rgba(31, 95, 191, 0.20));
+}
+
+.idelta-delta-token.is-weave-source-focus .source-focus-ring,
+.idelta-entry-token.is-weave-source-focus .source-focus-ring {
+  opacity: 1;
+}
+
+.idelta-delta-token.is-weave-source-focus text,
+.idelta-entry-token.is-weave-source-focus text {
+  paint-order: stroke;
+  stroke: rgba(248, 250, 251, 0.96);
+  stroke-width: 3px;
+  filter: none;
+}
+
+.lr-token text {
+  font-size: 26px;
+  font-weight: 930;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.lr-token.side-l text {
+  fill: #b86b00;
+}
+
+.lr-token.side-r text {
+  fill: #087845;
+}
+
+.lr-token.is-counting text,
+.lr-token.is-counted text {
+  filter: drop-shadow(0 0 10px rgba(194, 118, 22, 0.34));
+}
+
+.lr-token.is-counting text {
+  font-size: 31px;
+}
+
+.lr-token.is-moving text,
+.c-marker.is-moving text {
+  filter: drop-shadow(0 8px 18px rgba(15, 107, 122, 0.18));
+}
+
+.symbol-token.is-focus text,
+.story-main-label.is-focus,
+.underlined-delta-label.is-focus text,
+.underlined-delta-label.is-focus line {
+  filter: drop-shadow(0 0 12px rgba(31, 95, 191, 0.28));
+}
+
+.count-label {
+  fill: #52616c;
+  font-size: 18px;
+  font-weight: 820;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.count-summary {
+  font-size: 20px;
+  fill: #1f2937;
+  font-weight: 860;
+}
+
+.c-formula {
+  fill: #111827;
+  font-size: 21px;
+  font-weight: 850;
+}
+
+.c-formula-main {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 19px;
+  font-weight: 830;
+}
+
+.c-formula-op {
+  fill: #334155;
+  font-size: 20px;
+  font-weight: 780;
+}
+
+.c-formula-value {
+  fill: #1f5fbf;
+  font-size: 23px;
+  font-weight: 920;
+}
+
+.c-marker text {
+  fill: #1f5fbf;
+  font-size: 28px;
+  font-weight: 940;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.c-position-mark {
+  fill: rgba(31, 95, 191, 0.08);
+  stroke: rgba(31, 95, 191, 0.54);
+  stroke-width: 1.8;
+}
+
+.row-letter text {
+  fill: #111827;
+  font-size: 22px;
+  font-weight: 850;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.chain-envelope-rule {
+  stroke: #1f5fbf;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.chain-final-spine line {
+  stroke: rgba(82, 97, 108, 0.42);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.row-drop-guide {
+  stroke: rgba(31, 95, 191, 0.24);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.ibox-scan-line {
+  stroke: rgba(15, 107, 122, 0.92);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.ibox-letter-halo {
+  stroke-width: 2.2;
+}
+
+.ibox-letter-halo.endpoint {
+  fill: rgba(13, 116, 131, 0.12);
+  stroke: rgba(13, 116, 131, 0.72);
+}
+
+.ibox-letter-halo.match {
+  fill: rgba(194, 118, 22, 0.12);
+  stroke: rgba(194, 118, 22, 0.78);
+}
+
+.ibox-scan-dot {
+  fill: #0d7483;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.ibox-scan-dot.match {
+  fill: #c27616;
+}
+
+.ibox-range-fill {
+  fill: rgba(245, 158, 11, 0.11);
+  stroke: transparent;
+}
+
+.ibox-range-outline {
+  fill: transparent;
+  stroke: #c27616;
+  stroke-width: 1.8;
+}
+
+.row-interval {
+  fill: #52616c;
+  font-size: 15px;
+  font-weight: 830;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.row-color {
+  fill: #111827;
+  font-size: 15px;
+  font-weight: 850;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.row-color-dot {
+  fill: #ffffff;
+  stroke: #111827;
+  stroke-width: 1.4;
+}
+
+.row-color-dot.color-1 {
+  fill: rgba(31, 95, 191, 0.16);
+  stroke: #1f5fbf;
+}
+
+.row-color-dot.color-2 {
+  fill: rgba(181, 41, 47, 0.16);
+  stroke: #b5292f;
+}
+
+.row-color-dot.color-3 {
+  fill: rgba(23, 131, 77, 0.16);
+  stroke: #17834d;
+}
+
+.row-color-dot.color-4 {
+  fill: rgba(125, 75, 179, 0.16);
+  stroke: #7d4bb3;
+}
+
+.story-error {
+  fill: #9d1c1c;
+  font-size: 22px;
+  font-weight: 760;
+  text-anchor: middle;
+}
+
+@media (max-width: 860px) {
+  .story-rebuild-header,
+  .rebuild-input-wrap {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .story-progress {
+    left: 18px;
+    right: 18px;
+  }
+}

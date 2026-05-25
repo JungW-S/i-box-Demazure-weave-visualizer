@@ -3,25 +3,23 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Type A_n Admissible Chain and Demazure Weave</title>
-    <link rel="stylesheet" href="./style.css?v=20260520-label-fix">
+    <title>Construction demo: admissible chains and Demazure weaves</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./story_rebuild.css?v=weave-narration-clean-v3">
   </head>
-  <body>
-    <main class="app-shell">
-      <header class="page-header">
+  <body class="guided-story-page">
+    <main class="app-shell story-rebuild-shell">
+      <header class="page-header story-rebuild-header">
         <div>
-          <p class="eyebrow">i-boxes and Demazure weaves</p>
-          <h1><span class="formula header-formula">ℭ</span> to <span class="formula header-formula">𝒲<sub><span class="notation-underline">Δ</span></sub>(ℭ)</span> in type A<sub>n</sub></h1>
+          <p class="eyebrow">admissible chains and i-boxes</p>
+          <h1>Admissible chain and i-box construction in type A<sub>n</sub></h1>
           <p class="subtitle">
-            Construct the Demazure weave associated with a type A admissible chain.
+            Build the admissible chain, the double string, and the opening of the double inductive weave.
           </p>
-          <div class="page-links">
-            <a class="page-link" href="./d-experiment.html">Type D<sub>n</sub></a>
-          </div>
         </div>
       </header>
 
-      <section class="workspace">
+      <section class="rebuild-input-wrap">
         <form id="input-form" class="input-panel">
           <div class="panel-header">
             <h2>Input</h2>
@@ -46,9 +44,6 @@
             <p class="input-note">
               Randomly chooses the underlying <span class="notation-underline">Δ</span>, LR sequence, and admissible chain in type A<sub>n</sub>.
             </p>
-            <a class="guided-construction-link" href="./story_mode/story_rebuild.html">
-              Construction demo
-            </a>
           </section>
 
           <section class="input-subpanel manual-input-panel">
@@ -57,7 +52,7 @@
             </div>
 
             <label class="field">
-              <span>Expression sequence <span class="notation-underline">i</span></span>
+              <span>Expression sequence <span class="formula">𝐢</span></span>
               <textarea id="u-input" name="u" rows="2" spellcheck="false"></textarea>
             </label>
 
@@ -79,11 +74,25 @@
           </p>
           <div id="error-box" class="error-box" hidden></div>
         </form>
+      </section>
 
-        <section id="output" class="output-panel" aria-live="polite"></section>
+      <section id="story-film" class="story-film" aria-label="Scroll animation for admissible chains and i-boxes">
+        <div class="story-sticky">
+          <div class="story-stage">
+            <svg id="story-svg" viewBox="0 0 1440 860" role="img" aria-label="Scroll-driven construction"></svg>
+            <button id="story-play-button" class="story-play-button" type="button" aria-label="Play animation">
+              <span class="story-play-icon" aria-hidden="true">▶</span>
+              <span class="story-play-label">Play</span>
+            </button>
+            <div id="story-caption" class="story-caption" aria-live="polite"></div>
+            <div class="story-progress" aria-hidden="true">
+              <span id="story-progress-fill"></span>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
 
-    <script type="module" src="./src/app.mjs?v=20260520-label-fix"></script>
+    <script type="module" src="./src/story_rebuild.mjs?v=samantha-125-v2"></script>
   </body>
 </html>

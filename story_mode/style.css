@@ -567,34 +567,6 @@ h2 {
   width: 100%;
 }
 
-.guided-construction-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 34px;
-  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--soft-line));
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--accent-soft) 42%, #ffffff);
-  color: var(--accent-strong);
-  font-size: 12px;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.guided-construction-link::before {
-  content: "▶";
-  color: var(--accent);
-  font-size: 10px;
-  line-height: 1;
-}
-
-.guided-construction-link:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: #ffffff;
-}
-
 .input-note {
   margin: -2px 0 0;
   color: var(--muted);
@@ -757,8 +729,21 @@ h2 {
 }
 
 .notation-underline {
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+  line-height: 1;
+  padding-bottom: 0.06em;
+}
+
+.notation-underline::after {
+  content: "";
+  position: absolute;
+  left: 0.03em;
+  right: 0.03em;
+  bottom: -0.08em;
+  border-bottom: 0.08em solid currentColor;
+  border-radius: 999px;
 }
 
 .step-active-whole .step-section:not(.step-whole),

@@ -5,3 +5,5 @@ _review*.png
 _polish*.png
 _after_unify*.png
 *.log
+story_mode/audio/narration_*/
+story_mode/audio/narration_openai/
