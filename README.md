@@ -6,9 +6,8 @@ paper.
 The page is a static JavaScript app. It does not call Sage or any server-side
 code after the files are served.
 
-The public visualizer has a type `A_n` page, a type `D_n` experimental page,
-and a type `B_n` finite-type extension page. The `A_n` and `D_n` pages
-implement:
+The public visualizer has a type `A_n` page and a type `D_n` experimental
+page. It implements:
 
 - compute a reduced expression `\underline{\Delta}` for the longest element
   `w_0` in type `A_n`, and use the standard stable expression in type `D_n`,
@@ -45,13 +44,6 @@ LR sequence. The public type `D_n` page supports `D_4` and `D_5` reliably; for
 `D_6` and higher, the page reports that an optimized braid-path algorithm is
 needed.
 
-The type `B_n` page records the analogous admissible chain, the finite type
-Cartan matrix, the double string, and the formal weave construction. It
-renames the module-theoretic output as `i-box elements` and computes those
-elements by the finite type `T`-system with Cartan multiplicities. Pinning,
-weave coordinate variables, and cluster-variable formulas are intentionally
-left blank until a type `B_n` pinning convention is fixed.
-
 The Sage prototype and the calculation note in this folder remain references
 for the double inductive weave calculation rules.
 
@@ -67,7 +59,6 @@ Then open:
 
 ```text
 http://127.0.0.1:8766/
-http://127.0.0.1:8766/b-experiment.html
 http://127.0.0.1:8766/d-experiment.html
 ```
 

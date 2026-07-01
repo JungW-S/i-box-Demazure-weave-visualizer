@@ -6,8 +6,8 @@ function assertPositiveInteger(value, name) {
 
 export function normalizeDynkinFamily(value = "A") {
   const family = String(value ?? "A").trim().toUpperCase();
-  if (!["A", "B", "D", "E"].includes(family)) {
-    throw new Error(`Dynkin type must be A, B, D, or E.`);
+  if (!["A", "D", "E"].includes(family)) {
+    throw new Error(`Dynkin type must be A, D, or E.`);
   }
   return family;
 }
@@ -23,17 +23,13 @@ function dynkinEdges(family, rank) {
     edges.push([rank - 2, rank - 1], [rank - 2, rank]);
     return edges;
   }
-  if (family === "B") {
-    if (rank < 2) throw new Error("Type B_n requires n >= 2.");
-    return Array.from({ length: rank - 1 }, (_, idx) => [idx + 1, idx + 2]);
-  }
   if (rank < 6 || rank > 8) throw new Error("Type E_n requires n = 6, 7, or 8.");
   const edges = [[1, 3], [3, 4], [2, 4]];
   for (let i = 4; i < rank; i += 1) edges.push([i, i + 1]);
   return edges;
 }
 
-function cartanMatrix(family, rank, edges) {
+function cartanMatrix(rank, edges) {
   const cartan = Array.from({ length: rank }, (_, row) => (
     Array.from({ length: rank }, (_, col) => (row === col ? 2 : 0))
   ));
@@ -41,10 +37,6 @@ function cartanMatrix(family, rank, edges) {
     cartan[a - 1][b - 1] = -1;
     cartan[b - 1][a - 1] = -1;
   });
-  if (family === "B") {
-    cartan[rank - 2][rank - 1] = -2;
-    cartan[rank - 1][rank - 2] = -1;
-  }
   return cartan;
 }
 
@@ -162,7 +154,7 @@ export function createDynkinDatum({ family = "A", rank }) {
   const normalizedFamily = normalizeDynkinFamily(family);
   assertPositiveInteger(rank, "rank");
   const edges = dynkinEdges(normalizedFamily, rank);
-  const cartan = cartanMatrix(normalizedFamily, rank, edges);
+  const cartan = cartanMatrix(rank, edges);
   const adjacency = new Map(Array.from({ length: rank }, (_, idx) => [idx + 1, []]));
   edges.forEach(([a, b]) => {
     adjacency.get(a).push(b);
